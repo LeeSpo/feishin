@@ -10,7 +10,8 @@ import i18n from '/@/i18n/i18n';
 import { validateResponse } from '/@/renderer/api/response-validation';
 import { authenticationFailure } from '/@/renderer/api/utils';
 import { useAuthStore } from '/@/renderer/store';
-import { getServerUrl } from '/@/renderer/utils/normalize-server-url';
+import { resolveServerUrl } from '/@/renderer/utils/normalize-server-url';
+import { reportServerConnectionError } from '/@/renderer/utils/server-connection';
 import { jfType } from '/@/shared/api/jellyfin/jellyfin-types';
 import { getClientType } from '/@/shared/api/utils';
 import { ServerListItemWithCredential } from '/@/shared/types/domain-types';
@@ -516,7 +517,7 @@ export const jfApiClient = (args: {
             const { params, path: api } = parsePath(path);
 
             if (server) {
-                const serverUrl = getServerUrl(server, forceRemoteUrl);
+                const serverUrl = await resolveServerUrl(server, forceRemoteUrl, signal);
                 baseUrl = serverUrl;
                 token = server?.credential;
             } else {
@@ -552,6 +553,9 @@ export const jfApiClient = (args: {
                 };
             } catch (e: any | AxiosError | Error) {
                 if (isAxiosError(e)) {
+                    if (!forceRemoteUrl) {
+                        reportServerConnectionError(server, e, baseUrl);
+                    }
                     if (e.code === 'ERR_NETWORK') {
                         throw new Error(i18n.t('error.networkError') as string);
                     }

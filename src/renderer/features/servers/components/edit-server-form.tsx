@@ -231,6 +231,9 @@ export const EditServerForm = ({ isUpdate, onCancel, password, server }: EditSer
                     {...form.getInputProps('url')}
                 />
                 <TextInput
+                    description={t('form.addServer.input', {
+                        context: 'remoteUrlDescription',
+                    })}
                     label={t('form.addServer.input', {
                         context: 'remoteUrl',
                     })}

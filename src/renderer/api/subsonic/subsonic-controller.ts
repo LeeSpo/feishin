@@ -15,7 +15,7 @@ import {
 } from '/@/renderer/features/player/components/audio-players';
 import { randomString } from '/@/renderer/utils';
 import { logger } from '/@/renderer/utils/logger';
-import { getServerUrl } from '/@/renderer/utils/normalize-server-url';
+import { getServerUrl, resolveServerUrl } from '/@/renderer/utils/normalize-server-url';
 import { ssNormalize } from '/@/shared/api/subsonic/subsonic-normalize';
 import {
     AlbumListSortType,
@@ -38,6 +38,7 @@ import {
     LibraryItem,
     PlaylistListSort,
     ReplaceApiClientProps,
+    ServerListItemWithCredential,
     ServerType,
     Song,
     SongListSort,
@@ -245,13 +246,14 @@ function appendTranscodeParams(url: string, format?: string, bitrate?: number) {
 }
 
 function buildGetTranscodeStreamUrl(
-    server: null | undefined | { credential?: string; url?: string },
+    server: null | ServerListItemWithCredential | undefined,
     args: {
         mediaId: string;
         mediaType: 'podcast' | 'song';
         offset: number;
         transcodeParams: string;
     },
+    baseUrl = getServerUrl(server),
 ): string {
     const params = new URLSearchParams({
         c: 'Feishin',
@@ -262,7 +264,7 @@ function buildGetTranscodeStreamUrl(
         v: '1.13.0',
     });
 
-    return `${server?.url}/rest/getTranscodeStream.view?${params.toString()}&${server?.credential}`;
+    return `${baseUrl}/rest/getTranscodeStream.view?${params.toString()}&${server?.credential}`;
 }
 
 function sortAndPaginate<T>(
@@ -977,7 +979,7 @@ export const SubsonicController: InternalControllerEndpoint = {
         const { apiClientProps, query } = args;
 
         return (
-            `${apiClientProps.server?.url}/rest/download.view` +
+            `${getServerUrl(apiClientProps.server)}/rest/download.view` +
             `?id=${query.id}` +
             `&${apiClientProps.server?.credential}` +
             '&v=1.13.0' +
@@ -1974,7 +1976,12 @@ export const SubsonicController: InternalControllerEndpoint = {
         const { server } = apiClientProps;
         const { bitrate, format, id, mediaType = 'song', skipAutoTranscode, transcode } = query;
 
-        const streamUrl = `${server?.url}/rest/stream.view?id=${id}&v=1.13.0&c=Feishin&${server?.credential}`;
+        const serverUrl = await resolveServerUrl(
+            server,
+            apiClientProps.forceRemoteUrl,
+            apiClientProps.signal,
+        );
+        const streamUrl = `${serverUrl}/rest/stream.view?id=${id}&v=1.13.0&c=Feishin&${server?.credential}`;
 
         // If transcoding is explicitly enabled, just return the direct transcoded stream URL
         if (transcode) {
@@ -2044,12 +2051,16 @@ export const SubsonicController: InternalControllerEndpoint = {
                 return appendTranscodeParams(streamUrl, format, bitrate);
             }
 
-            const transcodeStreamUrl = buildGetTranscodeStreamUrl(server, {
-                mediaId: String(id),
-                mediaType: (mediaType ?? 'song') as 'podcast' | 'song',
-                offset: 0,
-                transcodeParams: td.transcodeParams,
-            });
+            const transcodeStreamUrl = buildGetTranscodeStreamUrl(
+                server,
+                {
+                    mediaId: String(id),
+                    mediaType: (mediaType ?? 'song') as 'podcast' | 'song',
+                    offset: 0,
+                    transcodeParams: td.transcodeParams,
+                },
+                serverUrl,
+            );
 
             return transcodeStreamUrl;
         }

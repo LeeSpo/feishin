@@ -5,6 +5,7 @@ import orderBy from 'lodash/orderBy';
 import { ndApiClient } from '/@/renderer/api/navidrome/navidrome-api';
 import { ssApiClient } from '/@/renderer/api/subsonic/subsonic-api';
 import { SubsonicController } from '/@/renderer/api/subsonic/subsonic-controller';
+import { resolveServerUrl } from '/@/renderer/utils/normalize-server-url';
 import { ndNormalize } from '/@/shared/api/navidrome/navidrome-normalize';
 import { NDRadioListSort, NDSongListSort } from '/@/shared/api/navidrome/navidrome-types';
 import { ssNormalize } from '/@/shared/api/subsonic/subsonic-normalize';
@@ -1294,7 +1295,7 @@ export const NavidromeController: InternalControllerEndpoint = {
         const { apiClientProps, body, query } = args;
 
         const server = apiClientProps.server;
-        const serverUrl = server?.url?.replace(/\/$/, '');
+        const serverUrl = await resolveServerUrl(server, false, apiClientProps.signal);
 
         if (!serverUrl) {
             throw new Error('Server is required');
@@ -1330,7 +1331,7 @@ export const NavidromeController: InternalControllerEndpoint = {
         const { apiClientProps, body, query } = args;
 
         const server = apiClientProps.server;
-        const serverUrl = server?.url?.replace(/\/$/, '');
+        const serverUrl = await resolveServerUrl(server, false, apiClientProps.signal);
 
         if (!serverUrl) {
             throw new Error('Server is required');
@@ -1366,7 +1367,7 @@ export const NavidromeController: InternalControllerEndpoint = {
         const { apiClientProps, body, query } = args;
 
         const server = apiClientProps.server;
-        const serverUrl = server?.url?.replace(/\/$/, '');
+        const serverUrl = await resolveServerUrl(server, false, apiClientProps.signal);
 
         if (!serverUrl) {
             throw new Error('Server is required');

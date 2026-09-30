@@ -1040,7 +1040,7 @@
             "input_preferInstantMix": "首选即时混音",
             "input_preferRemoteUrl": "首选公共 URL",
             "input_remoteUrl": "公共 URL",
-            "input_remoteUrlPlaceholder": "可选：对外功能的公共 URL",
+            "input_remoteUrlPlaceholder": "可选：同一服务器的公共访问地址",
             "input_passwordNoSSO": "不支持反向代理 (SSO) 认证。仅支持用户名/密码认证和 Subsonic 认证",
             "input_jellyfinQuickConnect": "快速连接",
             "input_jellyfinQuickConnectCode": "请在Jellyfin网页界面中输入此代码以完成授权",
@@ -1051,7 +1051,7 @@
             "input_jellyfinSignInMethod": "登录方式",
             "input_jellyfinSignInMethodPassword": "密码",
             "input_jellyfinSignInMethodQuickConnect": "快速连接",
-            "input_remoteUrlDescription": "用于替代外部功能（如分享链接）的URL地址。除非当前您服务器的地址在外部网络无法访问，否则请保持此字段为空。"
+            "input_remoteUrlDescription": "同一服务器的另一个访问地址，也用于分享链接。首选地址不可用时自动切换，恢复后自动切回。勾选“首选公共 URL”后优先使用此地址。切换仅影响后续请求和歌曲，不会重新加载当前歌曲。"
         },
         "addToPlaylist": {
             "success": "已将 $t(entity.trackWithCount, {\"count\": {{message}} }) 添加到 $t(entity.playlistWithCount, {\"count\": {{numOfPlaylists}} })",

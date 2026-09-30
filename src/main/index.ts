@@ -37,6 +37,7 @@ import './features';
 import { hotkeyToElectronAccelerator } from './utils';
 
 import { disableAutoUpdates, isLinux, isMacOS, isWindows } from '/@/main/env';
+import { isLocalServerOnSubnet } from '/@/main/utils/local-server-network';
 import {
     clampWindowBoundsToDisplay,
     DEFAULT_WINDOW_BOUNDS,
@@ -1089,6 +1090,15 @@ ipcMain.handle('power-save-blocker-stop', () => {
 
 ipcMain.handle('power-save-blocker-is-started', () => {
     return powerSaveBlockerId !== null && powerSaveBlocker.isStarted(powerSaveBlockerId);
+});
+
+ipcMain.handle('local-server-on-subnet', (): boolean | null => {
+    try {
+        return isLocalServerOnSubnet();
+    } catch (error) {
+        log.warn('Could not check local server subnet; using reachability checks', { error });
+        return null;
+    }
 });
 
 app.on('window-all-closed', () => {

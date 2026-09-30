@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 import z from 'zod';
 
 import { api } from '/@/renderer/api';
+import { useServerUrl } from '/@/renderer/hooks/use-server-connection';
 import {
     GeneralSettingsSchema,
     getServerById,
@@ -99,6 +100,7 @@ interface UseItemImageUrlProps {
 export const useItemImageUrl = (args: UseItemImageUrlProps) => {
     const { id, imageUrl, itemType, size, type, useRemoteUrl } = args;
     const serverId = useCurrentServerId();
+    const selectedUrl = useServerUrl(args.serverId || serverId);
 
     const imageRes = useImageRes();
     const sizeByType: number | undefined = type ? imageRes[type] : undefined;
@@ -113,7 +115,7 @@ export const useItemImageUrl = (args: UseItemImageUrlProps) => {
         }
 
         const targetServerId = args.serverId || serverId;
-        let baseUrl: string | undefined;
+        let baseUrl = selectedUrl;
 
         if (useRemoteUrl) {
             const server = getServerById(targetServerId);
@@ -127,12 +129,23 @@ export const useItemImageUrl = (args: UseItemImageUrlProps) => {
                 query: { id, itemType, size: size ?? sizeByType },
             }) || undefined
         );
-    }, [args.serverId, id, imageUrl, itemType, serverId, size, sizeByType, useRemoteUrl]);
+    }, [
+        args.serverId,
+        id,
+        imageUrl,
+        itemType,
+        selectedUrl,
+        serverId,
+        size,
+        sizeByType,
+        useRemoteUrl,
+    ]);
 };
 
 export const useItemImageRequest = (args: UseItemImageUrlProps) => {
     const { id, imageUrl, itemType, size, type, useRemoteUrl } = args;
     const serverId = useCurrentServerId();
+    const selectedUrl = useServerUrl(args.serverId || serverId);
 
     const imageRes = useImageRes();
     const sizeByType: number | undefined = type ? imageRes[type] : undefined;
@@ -150,7 +163,7 @@ export const useItemImageRequest = (args: UseItemImageUrlProps) => {
         }
 
         const targetServerId = args.serverId || serverId;
-        let baseUrl: string | undefined;
+        let baseUrl = selectedUrl;
 
         if (useRemoteUrl) {
             const server = getServerById(targetServerId);
@@ -164,7 +177,17 @@ export const useItemImageRequest = (args: UseItemImageUrlProps) => {
                 query: { id, itemType, size: size ?? sizeByType },
             }) || undefined
         );
-    }, [args.serverId, id, imageUrl, itemType, serverId, size, sizeByType, useRemoteUrl]);
+    }, [
+        args.serverId,
+        id,
+        imageUrl,
+        itemType,
+        selectedUrl,
+        serverId,
+        size,
+        sizeByType,
+        useRemoteUrl,
+    ]);
 };
 
 export function getItemImageRequest(args: UseItemImageUrlProps) {

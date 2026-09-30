@@ -13,6 +13,7 @@ import { useRadioStore } from '/@/renderer/features/radio/hooks/use-radio-player
 import { getMpvProperties } from '/@/renderer/features/settings/components/playback/mpv-properties';
 import {
     setMpvInitialized,
+    useAuthStore,
     useMpvInitialized,
     usePlaybackSettings,
     usePlayerActions,
@@ -21,6 +22,8 @@ import {
     useSettingsStore,
 } from '/@/renderer/store';
 import { logger } from '/@/renderer/utils/logger';
+import { getServerUrl } from '/@/renderer/utils/normalize-server-url';
+import { subscribeServerConnections } from '/@/renderer/utils/server-connection';
 import { toast } from '/@/shared/components/toast/toast';
 import { PlayerStatus } from '/@/shared/types/types';
 
@@ -70,6 +73,39 @@ export const MpvPlayerEngine = (props: MpvPlayerEngineProps) => {
     const mpvExtraParameters = useSettingsStore((store) => store.playback.mpvExtraParameters);
     const mpvProperties = useSettingsStore((store) => store.playback.mpvProperties);
     const [reloadTrigger, setReloadTrigger] = useState(0);
+
+    useEffect(() => {
+        if (!isInitialized) {
+            return;
+        }
+        let cancelled = false;
+        const unsubscribe = subscribeServerConnections((serverId, _previousUrl, url) => {
+            const song = usePlayerStore.getState().getPlayerData().nextSong;
+            if (!song || song._serverId !== serverId || useRadioStore.getState().currentStreamUrl) {
+                return;
+            }
+            getSongUrl(song, transcode, true)
+                .then((nextUrl) => {
+                    const nextSong = usePlayerStore.getState().getPlayerData().nextSong;
+                    if (
+                        !cancelled &&
+                        nextSong?._uniqueId === song._uniqueId &&
+                        getServerUrl(useAuthStore.getState().serverList[serverId]) === url
+                    ) {
+                        mpvPlayer?.setQueueNext(nextUrl);
+                    }
+                })
+                .catch(() => {
+                    logger.warn('Failed to update next track after server address changed', {
+                        serverId,
+                    });
+                });
+        });
+        return () => {
+            cancelled = true;
+            unsubscribe();
+        };
+    }, [isInitialized, transcode]);
 
     useEffect(() => {
         const handleMpvReload = () => {

@@ -108,6 +108,10 @@ const checkForUpdates = (): Promise<{ updateAvailable: boolean; version?: string
     return ipcRenderer.invoke('app-check-for-updates');
 };
 
+const isLocalServerOnSubnet = (): Promise<boolean | null> => {
+    return ipcRenderer.invoke('local-server-on-subnet');
+};
+
 const startPowerSaveBlocker = (full: boolean) => {
     return ipcRenderer.invoke('power-save-blocker-start', { full });
 };
@@ -180,6 +184,7 @@ export const utils = {
     forceGarbageCollection,
     getCustomCss,
     isLinux,
+    isLocalServerOnSubnet,
     isMacOS,
     isWindows,
     mainMessageListener,

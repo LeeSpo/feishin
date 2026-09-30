@@ -10,7 +10,8 @@ import { validateResponse } from '/@/renderer/api/response-validation';
 import { authenticationFailure } from '/@/renderer/api/utils';
 import { useAuthStore } from '/@/renderer/store';
 import { logger } from '/@/renderer/utils/logger';
-import { getServerUrl } from '/@/renderer/utils/normalize-server-url';
+import { resolveServerUrl } from '/@/renderer/utils/normalize-server-url';
+import { reportServerConnectionError } from '/@/renderer/utils/server-connection';
 import { ndType } from '/@/shared/api/navidrome/navidrome-types';
 import { resultWithHeaders } from '/@/shared/api/utils';
 import { toast } from '/@/shared/components/toast/toast';
@@ -400,10 +401,13 @@ axiosClient.interceptors.response.use(
                         shouldDelay = true;
 
                         // Do not use axiosClient. Instead, manually make a post
-                        const res = await axios.post(`${currentServer.url}/auth/login`, {
-                            password,
-                            username: currentServer.username,
-                        });
+                        const res = await axios.post(
+                            `${await resolveServerUrl(currentServer)}/auth/login`,
+                            {
+                                password,
+                                username: currentServer.username,
+                            },
+                        );
 
                         if (res.status === 429) {
                             toast.error({
@@ -488,7 +492,7 @@ export const ndApiClient = (args: {
             const { params, path: api } = parsePath(path);
 
             if (server) {
-                const serverUrl = getServerUrl(server, forceRemoteUrl);
+                const serverUrl = await resolveServerUrl(server, forceRemoteUrl, signal);
                 baseUrl = serverUrl ? `${serverUrl}/api` : undefined;
                 token = server?.ndCredential;
             } else {
@@ -524,6 +528,9 @@ export const ndApiClient = (args: {
                 };
             } catch (e: any | AxiosError | Error) {
                 if (isAxiosError(e)) {
+                    if (!forceRemoteUrl) {
+                        reportServerConnectionError(server, e, baseUrl?.replace(/\/api$/, ''));
+                    }
                     if (e.code === 'ERR_NETWORK') {
                         throw new Error(i18n.t('error.networkError') as string);
                     }

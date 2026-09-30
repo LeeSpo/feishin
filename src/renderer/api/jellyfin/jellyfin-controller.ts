@@ -8,7 +8,11 @@ import { z } from 'zod';
 import { createAuthHeader, jfApiClient } from '/@/renderer/api/jellyfin/jellyfin-api';
 import { useRadioStore } from '/@/renderer/features/radio/store/radio-store';
 import { isShuffleEnabled, usePlayerStoreBase } from '/@/renderer/store/player.store';
-import { getServerUrl, normalizeServerUrl } from '/@/renderer/utils/normalize-server-url';
+import {
+    getServerUrl,
+    normalizeServerUrl,
+    resolveServerUrl,
+} from '/@/renderer/utils/normalize-server-url';
 import { jfNormalize } from '/@/shared/api/jellyfin/jellyfin-normalize';
 import { JFSongListSort, JFSortOrder, jfType } from '/@/shared/api/jellyfin/jellyfin-types';
 import { getFeatures, hasFeature, sortSongList, VersionInfo } from '/@/shared/api/utils';
@@ -159,7 +163,7 @@ const uploadItemPrimaryImage = async (
     errorMessage: string,
 ): Promise<boolean> => {
     const server = apiClientProps.server;
-    const serverUrl = getServerUrl(server);
+    const serverUrl = await resolveServerUrl(server, false, apiClientProps.signal);
 
     if (!serverUrl) {
         throw new Error('Server is required');
@@ -647,8 +651,7 @@ export const JellyfinController: InternalControllerEndpoint = {
         const yearsFilter = yearsGroup.length ? yearsGroup.join(',') : undefined;
 
         let artistQuery:
-            | Omit<z.infer<typeof jfType._parameters.albumList>, 'IncludeItemTypes'>
-            | undefined;
+            Omit<z.infer<typeof jfType._parameters.albumList>, 'IncludeItemTypes'> | undefined;
 
         if (query.artistIds) {
             // Based mostly off of observation, this is the behavior I've seen:
@@ -783,7 +786,7 @@ export const JellyfinController: InternalControllerEndpoint = {
     getDownloadUrl: (args) => {
         const { apiClientProps, query } = args;
 
-        return `${apiClientProps.server?.url}/items/${query.id}/download?apiKey=${apiClientProps.server?.credential}`;
+        return `${getServerUrl(apiClientProps.server)}/items/${query.id}/download?apiKey=${apiClientProps.server?.credential}`;
     },
     getFavoriteSongs: async (args) => {
         const { apiClientProps, query } = args;
@@ -1549,7 +1552,8 @@ export const JellyfinController: InternalControllerEndpoint = {
             apiClientProps,
             query: { ...query, limit: 1, startIndex: 0 },
         }).then((result) => result!.totalRecordCount!),
-    getStreamUrl: async ({ apiClientProps: { server }, query }) => {
+    getStreamUrl: async ({ apiClientProps, query }) => {
+        const { server } = apiClientProps;
         // Lossy encoders top out at 48 kHz (libmp3lame, libopus, aac); asking Jellyfin
         // for more makes ffmpeg fail and the stream never starts.
         const clampSampleRate = (rate: number | undefined, codec: string) =>
@@ -1580,7 +1584,12 @@ export const JellyfinController: InternalControllerEndpoint = {
             `feishin-${id}-${codec}-${rate ?? 0}-${startTimeTicks}`;
         const deviceId = '';
 
-        let url = `${server?.url}/Items/${id}/Download?apiKey=${server?.credential}&playSessionId=${deviceId}`;
+        const serverUrl = await resolveServerUrl(
+            server,
+            apiClientProps.forceRemoteUrl,
+            apiClientProps.signal,
+        );
+        let url = `${serverUrl}/Items/${id}/Download?apiKey=${server?.credential}&playSessionId=${deviceId}`;
 
         if (transcode && forRenderer) {
             // UPnP/DLNA renderers commonly pick a decoder from the URL's file extension and
@@ -1592,7 +1601,7 @@ export const JellyfinController: InternalControllerEndpoint = {
             if (container?.toLowerCase() !== realFormat) {
                 const cappedRate = clampSampleRate(maxSampleRate, realFormat);
                 url =
-                    `${server?.url}/Audio/${id}/stream.${realFormat}` +
+                    `${serverUrl}/Audio/${id}/stream.${realFormat}` +
                     `?audioCodec=${realFormat}&static=false` +
                     `&apiKey=${server?.credential}` +
                     `&playSessionId=${transcodeSession(realFormat, cappedRate)}`;
@@ -1612,7 +1621,7 @@ export const JellyfinController: InternalControllerEndpoint = {
             const realFormat = format || 'mp3';
 
             url =
-                `${server?.url}/audio` +
+                `${serverUrl}/audio` +
                 `/${id}/universal` +
                 `?userId=${server?.userId}` +
                 `&deviceId=${deviceId}` +

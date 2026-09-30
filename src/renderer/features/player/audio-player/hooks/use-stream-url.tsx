@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
 import { api } from '/@/renderer/api';
+import { useServerUrl } from '/@/renderer/hooks/use-server-connection';
 import { TranscodingConfig } from '/@/renderer/store';
 import { QueueSong } from '/@/shared/types/domain-types';
 
@@ -11,6 +12,7 @@ export function useSongUrl(
     transcode: Partial<TranscodingConfig>,
 ): string | undefined {
     const prior = useRef(['', '']);
+    const selectedUrl = useServerUrl(song?._serverId);
     const shouldReusePrior = Boolean(
         song?._serverId && current && prior.current[0] === song._uniqueId && prior.current[1],
     );
@@ -32,6 +34,7 @@ export function useSongUrl(
             song?._serverId,
             'stream-url',
             song?.id,
+            shouldReusePrior ? 'reuse-prior' : selectedUrl,
             shouldReusePrior ? 'reuse-prior' : transcode.bitrate,
             shouldReusePrior ? 'reuse-prior' : transcode.format,
             shouldReusePrior ? 'reuse-prior' : transcode.maxSampleRate,

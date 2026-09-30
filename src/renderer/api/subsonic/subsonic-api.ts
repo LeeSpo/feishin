@@ -7,7 +7,8 @@ import i18n from '/@/i18n/i18n';
 import { validateResponse } from '/@/renderer/api/response-validation';
 import { authenticationFailure } from '/@/renderer/api/utils';
 import { useAuthStore } from '/@/renderer/store';
-import { getServerUrl } from '/@/renderer/utils/normalize-server-url';
+import { resolveServerUrl } from '/@/renderer/utils/normalize-server-url';
+import { reportServerConnectionError } from '/@/renderer/utils/server-connection';
 import { ssType } from '/@/shared/api/subsonic/subsonic-types';
 import { hasFeature } from '/@/shared/api/utils';
 import { toast } from '/@/shared/components/toast/toast';
@@ -497,7 +498,7 @@ export const ssApiClient = (args: {
             const { params, path: api } = parsePath(path);
 
             if (server) {
-                const serverUrl = getServerUrl(server, forceRemoteUrl);
+                const serverUrl = await resolveServerUrl(server, forceRemoteUrl, signal);
                 baseUrl = serverUrl ? `${serverUrl}/rest` : undefined;
                 const token = server.credential;
                 const params = token.split(/&?\w=/gm);
@@ -585,6 +586,9 @@ export const ssApiClient = (args: {
                 };
             } catch (e: any | AxiosError | Error) {
                 if (isAxiosError(e)) {
+                    if (!forceRemoteUrl) {
+                        reportServerConnectionError(server, e, baseUrl?.replace(/\/rest$/, ''));
+                    }
                     if (e.code === 'ERR_NETWORK') {
                         throw new Error(i18n.t('error.networkError') as string);
                     }

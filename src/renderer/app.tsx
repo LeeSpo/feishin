@@ -15,6 +15,7 @@ import { useCheckForUpdates } from '/@/renderer/hooks/use-check-for-updates';
 import { useFullscreenAutoOpen } from '/@/renderer/hooks/use-fullscreen-auto-open';
 import { useFullscreenToggle } from '/@/renderer/hooks/use-fullscreen-toggle';
 import { useNativeMenuSync } from '/@/renderer/hooks/use-native-menu-sync';
+import { useServerConnections } from '/@/renderer/hooks/use-server-connection';
 import { useSyncSettingsToMain } from '/@/renderer/hooks/use-sync-settings-to-main';
 import { AppRouter } from '/@/renderer/router/app-router';
 import {
@@ -113,6 +114,7 @@ const AppShell = memo(function AppShell() {
 
 const AppEffects = () => (
     <>
+        <ServerConnectionsEffect />
         <SyncSettingsEffect />
         <UpdateCheckEffect />
         <CustomCssFileEffect />
@@ -125,6 +127,11 @@ const AppEffects = () => (
         <InputFocusEffect />
     </>
 );
+
+const ServerConnectionsEffect = () => {
+    useServerConnections();
+    return null;
+};
 
 const SyncSettingsEffect = () => {
     useSyncSettingsToMain();
