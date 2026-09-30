@@ -44,6 +44,7 @@ import { Modal } from '/@/shared/components/modal/modal';
 import { Tooltip } from '/@/shared/components/tooltip/tooltip';
 import { useDisclosure } from '/@/shared/hooks/use-disclosure';
 import { useLocalStorage } from '/@/shared/hooks/use-local-storage';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { LibraryItem, Song, SongListSort, SortOrder } from '/@/shared/types/domain-types';
 import { ItemListKey } from '/@/shared/types/types';
 
@@ -206,19 +207,22 @@ export const PlaylistDetailSongListHeaderFilters = ({
             <Group gap="sm" wrap="nowrap">
                 {isViewEditMode &&
                     (isSmartPlaylist ? (
-                        editActions
+                        PRODUCT_FEATURES.smartPlaylistQueryEditor ? (
+                            editActions
+                        ) : null
                     ) : (
                         <SaveAndReplaceButton mode={mode} songIds={tracks} />
                     ))}
-                {isViewEditMode && (
-                    <Button
-                        onClick={() => setMode?.(mode === 'edit' ? 'view' : 'edit')}
-                        uppercase
-                        variant={mode === 'edit' ? 'state-error' : 'subtle'}
-                    >
-                        {mode === 'edit' ? t('common.cancel') : t('common.edit')}
-                    </Button>
-                )}
+                {isViewEditMode &&
+                    (!isSmartPlaylist || PRODUCT_FEATURES.smartPlaylistQueryEditor) && (
+                        <Button
+                            onClick={() => setMode?.(mode === 'edit' ? 'view' : 'edit')}
+                            uppercase
+                            variant={mode === 'edit' ? 'state-error' : 'subtle'}
+                        >
+                            {mode === 'edit' ? t('common.cancel') : t('common.edit')}
+                        </Button>
+                    )}
                 <Tooltip label={t(`common.${collapsed ? 'expand' : 'collapse'}`, {})}>
                     <ActionIcon
                         icon={collapsed ? 'arrowDownS' : 'arrowUpS'}

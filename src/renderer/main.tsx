@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 
 import { App } from '/@/renderer/app';
 import { queryClient } from '/@/renderer/lib/react-query';
+import { installTauriBridge } from '/@/renderer/platform/tauri-bridge';
 
 function createIDBPersister(idbValidKey: IDBValidKey = 'reactQuery') {
     return {
@@ -25,33 +26,39 @@ function createIDBPersister(idbValidKey: IDBValidKey = 'reactQuery') {
 
 const indexedDbPersister = createIDBPersister('feishin');
 
-createRoot(document.getElementById('root')!).render(
-    <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{
-            buster: 'feishin',
-            dehydrateOptions: {
-                shouldDehydrateQuery: (query) => {
-                    const isSuccess = query.state.status === 'success';
-                    const isLyricsQueryKey =
-                        query.queryKey.includes('song') &&
-                        query.queryKey.includes('lyrics') &&
-                        query.queryKey.includes('select');
+const bootstrap = async () => {
+    await installTauriBridge();
 
-                    return isSuccess && isLyricsQueryKey;
-                },
-            },
-            hydrateOptions: {
-                defaultOptions: {
-                    queries: {
-                        gcTime: Infinity,
+    createRoot(document.getElementById('root')!).render(
+        <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{
+                buster: 'feishin',
+                dehydrateOptions: {
+                    shouldDehydrateQuery: (query) => {
+                        const isSuccess = query.state.status === 'success';
+                        const isLyricsQueryKey =
+                            query.queryKey.includes('song') &&
+                            query.queryKey.includes('lyrics') &&
+                            query.queryKey.includes('select');
+
+                        return isSuccess && isLyricsQueryKey;
                     },
                 },
-            },
-            maxAge: Infinity,
-            persister: indexedDbPersister,
-        }}
-    >
-        <App />
-    </PersistQueryClientProvider>,
-);
+                hydrateOptions: {
+                    defaultOptions: {
+                        queries: {
+                            gcTime: Infinity,
+                        },
+                    },
+                },
+                maxAge: Infinity,
+                persister: indexedDbPersister,
+            }}
+        >
+            <App />
+        </PersistQueryClientProvider>,
+    );
+};
+
+void bootstrap();

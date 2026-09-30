@@ -13,11 +13,14 @@ import { useCurrentServer } from '/@/renderer/store';
 import { hasFeature } from '/@/shared/api/utils';
 import { Divider } from '/@/shared/components/divider/divider';
 import { Stack } from '/@/shared/components/stack/stack';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { ServerFeature } from '/@/shared/types/features-types';
 
 export const GeneralTab = memo(() => {
     const server = useCurrentServer();
-    const supportsSmartPlaylists = hasFeature(server, ServerFeature.PLAYLISTS_SMART);
+    const supportsSmartPlaylists =
+        PRODUCT_FEATURES.smartPlaylistQueryEditor &&
+        hasFeature(server, ServerFeature.PLAYLISTS_SMART);
 
     const sections = useMemo(() => {
         const baseSections = [

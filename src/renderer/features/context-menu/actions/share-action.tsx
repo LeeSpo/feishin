@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ContextMenu } from '/@/shared/components/context-menu/context-menu';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { LibraryItem } from '/@/shared/types/domain-types';
 
 interface ShareActionProps {
@@ -40,6 +41,10 @@ export const ShareAction = ({ ids, itemType }: ShareActionProps) => {
             title: t('page.contextMenu.shareItem'),
         });
     }, [ids, resourceType, t]);
+
+    if (!PRODUCT_FEATURES.sharing) {
+        return null;
+    }
 
     return (
         <ContextMenu.Item leftIcon="share" onSelect={onSelect}>

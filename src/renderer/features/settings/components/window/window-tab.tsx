@@ -8,23 +8,34 @@ import { RemoteSettings } from '/@/renderer/features/settings/components/window/
 import { WindowSettings } from '/@/renderer/features/settings/components/window/window-settings';
 import { Divider } from '/@/shared/components/divider/divider';
 import { Stack } from '/@/shared/components/stack/stack';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 
 const utils = isElectron() ? window.api.utils : null;
 
 const sections = [
     { component: WindowSettings, key: 'window' },
-    { component: DiscordSettings, key: 'discord' },
-    { component: RemoteSettings, key: 'remote' },
+    {
+        component: DiscordSettings,
+        hidden: !PRODUCT_FEATURES.discordRpc,
+        key: 'discord',
+    },
+    {
+        component: RemoteSettings,
+        hidden: !PRODUCT_FEATURES.phoneRemote,
+        key: 'remote',
+    },
     { component: PasswordSettings, hidden: !utils?.isLinux(), key: 'password' },
 ];
 
 export const WindowTab = memo(() => {
+    const visible = sections.filter((section) => !section.hidden);
+
     return (
         <Stack gap="md">
-            {sections.map(({ component: Section, hidden, key }, index) => (
+            {visible.map(({ component: Section, key }, index) => (
                 <Fragment key={key}>
-                    {!hidden && <Section />}
-                    {index < sections.length - 1 && <Divider />}
+                    <Section />
+                    {index < visible.length - 1 && <Divider />}
                 </Fragment>
             ))}
         </Stack>

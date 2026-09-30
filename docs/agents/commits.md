@@ -51,6 +51,7 @@ Scope is optional. When present, it must be one of (see `commitlint.config.mjs` 
 | `window` | Titlebar, minimize/restore, fullscreen chrome |
 | `sharing` | Shares |
 | `tag-editor` | Tag editing |
+| `tauri` | Tauri desktop shell / migration |
 
 ### Meta
 

@@ -1,7 +1,6 @@
 import type { MusicCacheCollection, MusicCacheEntry } from '/@/shared/types/music-cache';
 
 import { closeAllModals, openModal } from '@mantine/modals';
-import isElectron from 'is-electron';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -15,6 +14,7 @@ import { useMusicCache } from './use-music-cache';
 import { usePlayer } from '/@/renderer/features/player/context/player-context';
 import { useRadioStore } from '/@/renderer/features/radio/hooks/use-radio-player';
 import { AnimatedPage } from '/@/renderer/features/shared/components/animated-page';
+import { getMusicCacheAdapter, isDesktopShell } from '/@/renderer/platform/platform-adapter';
 import { AppRoute } from '/@/renderer/router/routes';
 import { getServerById, useSettingsStore } from '/@/renderer/store';
 import { formatSizeString } from '/@/renderer/utils/format';
@@ -79,10 +79,12 @@ const LocalMusicRoute = () => {
     };
 
     const play = async (items: MusicCacheEntry[], type: Play) => {
-        const songs = [];
+        const songs: Array<(typeof items)[number]['song'] & { _localCacheKey: string }> = [];
         for (const entry of items) {
             if (entry.status !== 'ready') continue;
-            const file = await window.api.musicCache.lookup({ key: entry.key });
+            const file = await (
+                getMusicCacheAdapter() as NonNullable<ReturnType<typeof getMusicCacheAdapter>>
+            ).lookup({ key: entry.key });
             if (!file) throw new Error(t('musicCache.missingFile'));
             songs.push({ ...entry.song, _localCacheKey: entry.key });
         }
@@ -106,7 +108,11 @@ const LocalMusicRoute = () => {
                 <ConfirmModal
                     onConfirm={() =>
                         run(async () => {
-                            await window.api.musicCache.remove(key, isCollection);
+                            await (
+                                getMusicCacheAdapter() as NonNullable<
+                                    ReturnType<typeof getMusicCacheAdapter>
+                                >
+                            ).remove(key, isCollection);
                             if (key === selected) setSelected(null);
                             closeAllModals();
                         })
@@ -122,7 +128,7 @@ const LocalMusicRoute = () => {
             title: t(isCollection ? 'musicCache.removeCollection' : 'musicCache.removeFile'),
         });
 
-    if (!isElectron()) return null;
+    if (!isDesktopShell()) return null;
     return (
         <AnimatedPage>
             <div className={styles.content}>
@@ -230,10 +236,13 @@ const LocalMusicRoute = () => {
                                                         disabled={busy}
                                                         onClick={() => {
                                                             void run(() =>
-                                                                window.api.musicCache.cancel(
-                                                                    item.key,
-                                                                    true,
-                                                                ),
+                                                                (
+                                                                    getMusicCacheAdapter() as NonNullable<
+                                                                        ReturnType<
+                                                                            typeof getMusicCacheAdapter
+                                                                        >
+                                                                    >
+                                                                ).cancel(item.key, true),
                                                             );
                                                         }}
                                                         size="xs"
@@ -351,7 +360,13 @@ const LocalMusicRoute = () => {
                                                                 disabled={busy}
                                                                 onClick={() => {
                                                                     void run(() =>
-                                                                        window.api.musicCache.save({
+                                                                        (
+                                                                            getMusicCacheAdapter() as NonNullable<
+                                                                                ReturnType<
+                                                                                    typeof getMusicCacheAdapter
+                                                                                >
+                                                                            >
+                                                                        ).save({
                                                                             items: [
                                                                                 {
                                                                                     descriptor:
@@ -372,9 +387,13 @@ const LocalMusicRoute = () => {
                                                                 disabled={busy}
                                                                 onClick={() => {
                                                                     void run(() =>
-                                                                        window.api.musicCache.cancel(
-                                                                            entry.key,
-                                                                        ),
+                                                                        (
+                                                                            getMusicCacheAdapter() as NonNullable<
+                                                                                ReturnType<
+                                                                                    typeof getMusicCacheAdapter
+                                                                                >
+                                                                            >
+                                                                        ).cancel(entry.key),
                                                                     );
                                                                 }}
                                                                 size="xs"
@@ -393,9 +412,13 @@ const LocalMusicRoute = () => {
                                                                     disabled={busy}
                                                                     onClick={() => {
                                                                         void run(() =>
-                                                                            window.api.musicCache.cancel(
-                                                                                entry.key,
-                                                                            ),
+                                                                            (
+                                                                                getMusicCacheAdapter() as NonNullable<
+                                                                                    ReturnType<
+                                                                                        typeof getMusicCacheAdapter
+                                                                                    >
+                                                                                >
+                                                                            ).cancel(entry.key),
                                                                         );
                                                                     }}
                                                                     size="xs"

@@ -24,6 +24,7 @@ import {
 import { sentenceCase } from '/@/renderer/utils';
 import { logger } from '/@/renderer/utils/logger';
 import { useDebouncedCallback } from '/@/shared/hooks/use-debounced-callback';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { LibraryItem, QueueSong, ServerType } from '/@/shared/types/domain-types';
 import { PlayerStatus } from '/@/shared/types/types';
 
@@ -496,7 +497,13 @@ export const DiscordRpcHook = () => {
     const isPrivateMode = useAppStore((state) => state.privateMode);
     const discordRpc = isElectronEnv ? window.api.discordRpc : null;
 
-    if (!isElectronEnv || !discordRpc || !isDiscordRpcEnabled || isPrivateMode) {
+    if (
+        !PRODUCT_FEATURES.discordRpc ||
+        !isElectronEnv ||
+        !discordRpc ||
+        !isDiscordRpcEnabled ||
+        isPrivateMode
+    ) {
         return null;
     }
 

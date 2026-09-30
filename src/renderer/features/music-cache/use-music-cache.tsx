@@ -2,24 +2,30 @@ import type { QueueSong, Song } from '/@/shared/types/domain-types';
 import type { ReactNode } from 'react';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import isElectron from 'is-electron';
 import { createContext, useContext, useEffect, useMemo } from 'react';
 
 import { createMusicCacheIndex, getSongCacheEntries } from './music-cache-index';
 
+import { getMusicCacheAdapter, isDesktopShell } from '/@/renderer/platform/platform-adapter';
 import { useAuthStore } from '/@/renderer/store';
 
 const useMusicCacheQuery = () => {
     const queryClient = useQueryClient();
+    const cache = getMusicCacheAdapter();
     const query = useQuery({
-        enabled: isElectron() && !!window.api?.musicCache,
-        queryFn: () => window.api.musicCache.list(),
+        enabled: isDesktopShell() && !!cache,
+        queryFn: () => {
+            const adapter = getMusicCacheAdapter();
+            if (!adapter) throw new Error('Music cache adapter unavailable');
+            return adapter.list();
+        },
         queryKey: ['music-cache'],
         staleTime: Infinity,
     });
     useEffect(() => {
-        if (!isElectron() || !window.api?.musicCache) return;
-        return window.api.musicCache.onChanged(() => {
+        const adapter = getMusicCacheAdapter();
+        if (!adapter) return;
+        return adapter.onChanged(() => {
             void queryClient.invalidateQueries(
                 { queryKey: ['music-cache'] },
                 { cancelRefetch: false },
@@ -35,7 +41,7 @@ const MusicCacheIndexContext = createContext(createMusicCacheIndex([]));
 export const MusicCacheProvider = ({ children }: { children: ReactNode }) => {
     const query = useMusicCacheQuery();
     const index = useMemo(
-        () => createMusicCacheIndex(isElectron() ? query.data?.entries || [] : []),
+        () => createMusicCacheIndex(isDesktopShell() ? query.data?.entries || [] : []),
         [query.data?.entries],
     );
     return (

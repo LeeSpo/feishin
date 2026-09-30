@@ -8,3 +8,6 @@ release
 .idea
 .scratch
 tsconfig.*.tsbuildinfo
+# Tauri
+src-tauri/target
+src-tauri/gen

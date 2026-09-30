@@ -12,6 +12,7 @@ import { AppRoute } from '/@/renderer/router/routes';
 import { TitlebarOutlet } from '/@/renderer/router/titlebar-outlet';
 import { BaseContextModal, ModalsProvider } from '/@/shared/components/modal/modal';
 import { Spinner } from '/@/shared/components/spinner/spinner';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 
 const NowPlayingRoute = lazy(
     () => import('/@/renderer/features/now-playing/routes/now-playing-route'),
@@ -80,7 +81,9 @@ const GenreDetailRoute = lazy(
 
 const FolderListRoute = lazy(() => import('/@/renderer/features/folders/routes/folder-list-route'));
 
-const RadioListRoute = lazy(() => import('/@/renderer/features/radio/routes/radio-list-route'));
+const RadioListRoute = PRODUCT_FEATURES.internetRadio
+    ? lazy(() => import('/@/renderer/features/radio/routes/radio-list-route'))
+    : null;
 
 const SearchRoute = lazy(() => import('/@/renderer/features/search/routes/search-route'));
 
@@ -158,11 +161,17 @@ const LazyShareItemContextModal = lazy(() =>
     })),
 );
 
-const ShareItemContextModal = (props: any) => (
-    <Suspense fallback={<Spinner container />}>
-        <LazyShareItemContextModal {...props} />
-    </Suspense>
-);
+const ShareItemContextModal = (props: any) => {
+    if (!PRODUCT_FEATURES.sharing) {
+        return null;
+    }
+
+    return (
+        <Suspense fallback={<Spinner container />}>
+            <LazyShareItemContextModal {...props} />
+        </Suspense>
+    );
+};
 
 const LazyVisualizerSettingsContextModal = lazy(() =>
     import('/@/renderer/features/visualizer/components/audiomotionanalyzer/visualizer-settings-modal').then(
@@ -302,7 +311,12 @@ export const AppRouter = () => {
                                             element={<PlaylistListRoute />}
                                             path={AppRoute.PLAYLISTS}
                                         />
-                                        <Route element={<RadioListRoute />} path={AppRoute.RADIO} />
+                                        {RadioListRoute && (
+                                            <Route
+                                                element={<RadioListRoute />}
+                                                path={AppRoute.RADIO}
+                                            />
+                                        )}
                                         <Route
                                             element={<PlaylistDetailSongListRoute />}
                                             path={AppRoute.PLAYLISTS_DETAIL_SONGS}

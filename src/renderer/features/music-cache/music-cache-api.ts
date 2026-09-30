@@ -6,10 +6,9 @@ import type {
     MusicCacheSaveRequest,
 } from '/@/shared/types/music-cache';
 
-import isElectron from 'is-electron';
-
 import { api } from '/@/renderer/api';
 import { getSongUrl } from '/@/renderer/features/player/audio-player/hooks/use-stream-url';
+import { getMusicCacheAdapter, isDesktopShell } from '/@/renderer/platform/platform-adapter';
 import { getServerById, useSettingsStore } from '/@/renderer/store';
 import { logger } from '/@/renderer/utils/logger';
 import { SongListSort, SortOrder } from '/@/shared/types/domain-types';
@@ -39,7 +38,7 @@ export const getMpvSongUrl = async (
     transcode: Partial<TranscodingConfig>,
     skipAutoTranscode = true,
 ): Promise<string | undefined> => {
-    const cache = isElectron() ? window.api.musicCache : null;
+    const cache = getMusicCacheAdapter();
     if (song._localCacheKey) {
         const file = await cache?.lookup({ key: song._localCacheKey });
         if (!file)
@@ -77,7 +76,8 @@ export const saveSongsOffline = async (
     songs: Song[],
     collection?: MusicCacheSaveRequest['collection'],
 ) => {
-    if (!isElectron()) return;
+    const cache = getMusicCacheAdapter();
+    if (!cache || !isDesktopShell()) return;
     if (!songs.length) throw new Error('There are no songs to save in this collection');
     const transcode = useSettingsStore.getState().playback.transcode;
     const items: MusicCacheSaveRequest['items'] = [];
@@ -87,7 +87,7 @@ export const saveSongsOffline = async (
         let item = resolved.get(identity);
         if (!item) {
             const descriptor = getCacheDescriptor(song, transcode);
-            const file = await window.api.musicCache.lookup({ descriptor });
+            const file = await cache.lookup({ descriptor });
             item = {
                 descriptor,
                 url: file
@@ -110,7 +110,7 @@ export const saveSongsOffline = async (
         }
         items.push(item);
     }
-    await window.api.musicCache.save({ collection, items });
+    await cache.save({ collection, items });
 };
 
 export const retryOfflineSong = async (entry: MusicCacheEntry) => {
@@ -131,7 +131,9 @@ export const retryOfflineSong = async (entry: MusicCacheEntry) => {
             transcode: entry.profile.enabled,
         },
     });
-    await window.api.musicCache.retry(entry.key, url);
+    const cache = getMusicCacheAdapter();
+    if (!cache) throw new Error('Music cache is unavailable in this shell');
+    await cache.retry(entry.key, url);
 };
 
 export const getOfflineCollectionSongs = async (

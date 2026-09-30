@@ -21,6 +21,7 @@ import { Text } from '/@/shared/components/text/text';
 import { Textarea } from '/@/shared/components/textarea/textarea';
 import { toast } from '/@/shared/components/toast/toast';
 import { useForm } from '/@/shared/hooks/use-form';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import {
     CreatePlaylistBody,
     ServerListItem,
@@ -175,7 +176,8 @@ export const CreatePlaylistForm = ({ onCancel, songs }: CreatePlaylistFormProps)
                                     })}
                                 />
                             )}
-                            {server?.type === ServerType.NAVIDROME &&
+                            {PRODUCT_FEATURES.smartPlaylistQueryEditor &&
+                                server?.type === ServerType.NAVIDROME &&
                                 hasFeature(server, ServerFeature.PLAYLISTS_SMART) &&
                                 !isPrefilledPlaylist && (
                                     <Switch

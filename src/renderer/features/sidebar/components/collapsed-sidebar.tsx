@@ -27,6 +27,7 @@ import { Group } from '/@/shared/components/group/group';
 import { Icon } from '/@/shared/components/icon/icon';
 import { ScrollArea } from '/@/shared/components/scroll-area/scroll-area';
 import { Stack } from '/@/shared/components/stack/stack';
+import { CUT_SIDEBAR_ITEM_IDS } from '/@/shared/lib/product-features';
 import { LibraryItem } from '/@/shared/types/domain-types';
 import { Platform } from '/@/shared/types/types';
 
@@ -63,7 +64,7 @@ export const CollapsedSidebar = () => {
         if (!sidebarItems) return [];
 
         const items = sidebarItems
-            .filter((item) => !item.disabled)
+            .filter((item) => !item.disabled && !CUT_SIDEBAR_ITEM_IDS.has(item.id))
             .map((item) => ({
                 ...item,
                 label:

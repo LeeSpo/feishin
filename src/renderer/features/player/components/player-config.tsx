@@ -40,6 +40,7 @@ import { Select } from '/@/shared/components/select/select';
 import { Slider } from '/@/shared/components/slider/slider';
 import { Stack } from '/@/shared/components/stack/stack';
 import { Text } from '/@/shared/components/text/text';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { CrossfadeStyle, PlayerStatus, PlayerStyle, PlayerType } from '/@/shared/types/types';
 
 const ipc = isElectron() ? window.api.ipc : null;
@@ -264,9 +265,19 @@ const AudioPlayerTypeConfig = () => {
                         value: PlayerType.LOCAL,
                     },
                     { label: 'Web', value: PlayerType.WEB },
-                    { label: 'Jukebox', value: PlayerType.JUKEBOX },
-                    ...(isCasting
-                        ? [{ disabled: true, label: 'DLNA', value: PlayerType.DLNA }]
+                    ...(PRODUCT_FEATURES.dlnaJukebox
+                        ? [
+                              { label: 'Jukebox', value: PlayerType.JUKEBOX },
+                              ...(isCasting
+                                  ? [
+                                        {
+                                            disabled: true,
+                                            label: 'DLNA',
+                                            value: PlayerType.DLNA,
+                                        },
+                                    ]
+                                  : []),
+                          ]
                         : []),
                 ]}
                 defaultValue={playbackSettings.type}

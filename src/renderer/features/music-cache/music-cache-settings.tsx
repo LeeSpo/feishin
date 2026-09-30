@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useMusicCache } from './use-music-cache';
 
 import { SettingsSection } from '/@/renderer/features/settings/components/settings-section';
+import { getMusicCacheAdapter } from '/@/renderer/platform/platform-adapter';
 import { formatSizeString } from '/@/renderer/utils/format';
 import { Button } from '/@/shared/components/button/button';
 import { Group } from '/@/shared/components/group/group';
@@ -46,7 +47,11 @@ export const MusicCacheSettingsSection = () => {
                 <ConfirmModal
                     onConfirm={() =>
                         run(async () => {
-                            await window.api.musicCache.clearAutomatic();
+                            await (
+                                getMusicCacheAdapter() as NonNullable<
+                                    ReturnType<typeof getMusicCacheAdapter>
+                                >
+                            ).clearAutomatic();
                             closeAllModals();
                         })
                     }
@@ -69,7 +74,11 @@ export const MusicCacheSettingsSection = () => {
                                 disabled={busy}
                                 onChange={(event) => {
                                     void run(() =>
-                                        window.api.musicCache.configure({
+                                        (
+                                            getMusicCacheAdapter() as NonNullable<
+                                                ReturnType<typeof getMusicCacheAdapter>
+                                            >
+                                        ).configure({
                                             ...data.settings,
                                             enabled: event.currentTarget.checked,
                                         }),
@@ -95,7 +104,11 @@ export const MusicCacheSettingsSection = () => {
                                         return;
                                     }
                                     void run(() =>
-                                        window.api.musicCache.configure({
+                                        (
+                                            getMusicCacheAdapter() as NonNullable<
+                                                ReturnType<typeof getMusicCacheAdapter>
+                                            >
+                                        ).configure({
                                             ...data.settings,
                                             maxBytes: amount * MUSIC_CACHE_GIB,
                                         }),
@@ -125,7 +138,11 @@ export const MusicCacheSettingsSection = () => {
                     disabled={busy}
                     onClick={() => {
                         void run(async () => {
-                            const message = await window.api.musicCache.openFolder();
+                            const message = await (
+                                getMusicCacheAdapter() as NonNullable<
+                                    ReturnType<typeof getMusicCacheAdapter>
+                                >
+                            ).openFolder();
                             if (message) throw new Error(message);
                         });
                     }}

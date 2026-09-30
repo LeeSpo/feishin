@@ -59,6 +59,7 @@ import { Stack } from '/@/shared/components/stack/stack';
 import { useMediaQuery } from '/@/shared/hooks/use-media-query';
 import { useThrottledCallback } from '/@/shared/hooks/use-throttled-callback';
 import { useThrottledValue } from '/@/shared/hooks/use-throttled-value';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { LibraryItem, QueueSong, ServerType } from '/@/shared/types/domain-types';
 import { PlayerType } from '/@/shared/types/types';
 
@@ -96,7 +97,7 @@ export const RightControls = () => {
                 <AutoDJButton />
             </Group>
             <Group align="center" gap="xs" wrap="nowrap">
-                <DlnaCastButton />
+                {PRODUCT_FEATURES.dlnaJukebox && <DlnaCastButton />}
                 <SleepTimerButton />
                 <PlayerConfig />
                 <LyricsButton />

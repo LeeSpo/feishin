@@ -20,6 +20,7 @@ import { Slider } from '/@/shared/components/slider/slider';
 import { Stack } from '/@/shared/components/stack/stack';
 import { Switch } from '/@/shared/components/switch/switch';
 import { Text } from '/@/shared/components/text/text';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { getAppTheme } from '/@/shared/themes/app-theme';
 import { AppTheme } from '/@/shared/themes/app-theme-types';
 
@@ -195,7 +196,10 @@ export const ThemeSettings = memo(() => {
     const { setColorScheme } = useSetColorScheme();
     const customThemes = useCustomThemes();
 
-    const groupedThemeData = useMemo(() => getGroupedThemeData(customThemes), [customThemes]);
+    const groupedThemeData = useMemo(
+        () => getGroupedThemeData(PRODUCT_FEATURES.diskCustomThemes ? customThemes : []),
+        [customThemes],
+    );
 
     const themeOptions: SettingOption[] = [
         {
@@ -401,7 +405,7 @@ export const ThemeSettings = memo(() => {
         <SettingsSection
             extra={
                 <>
-                    <CustomThemesManager />
+                    {PRODUCT_FEATURES.diskCustomThemes && <CustomThemesManager />}
                     <StylesSettings />
                 </>
             }

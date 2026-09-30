@@ -7,20 +7,31 @@ import { MediaSessionSettings } from '/@/renderer/features/settings/components/h
 import { WindowHotkeySettings } from '/@/renderer/features/settings/components/hotkeys/window-hotkey-settings';
 import { Divider } from '/@/shared/components/divider/divider';
 import { Stack } from '/@/shared/components/stack/stack';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 
 const sections = [
-    { component: WindowHotkeySettings, hidden: !isElectron(), key: 'window' },
+    {
+        component: WindowHotkeySettings,
+        hidden: !isElectron() || !PRODUCT_FEATURES.complexGlobalHotkeys,
+        key: 'window',
+    },
     { component: MediaSessionSettings, key: 'media-session' },
-    { component: HotkeyManagerSettings, key: 'hotkey-manager' },
+    {
+        component: HotkeyManagerSettings,
+        hidden: !PRODUCT_FEATURES.complexGlobalHotkeys,
+        key: 'hotkey-manager',
+    },
 ];
 
 export const HotkeysTab = memo(() => {
+    const visible = sections.filter((section) => !section.hidden);
+
     return (
         <Stack gap="md">
-            {sections.map(({ component: Section, hidden, key }, index) => (
+            {visible.map(({ component: Section, key }, index) => (
                 <Fragment key={key}>
-                    {!hidden && <Section />}
-                    {index < sections.length - 1 && <Divider />}
+                    <Section />
+                    {index < visible.length - 1 && <Divider />}
                 </Fragment>
             ))}
         </Stack>

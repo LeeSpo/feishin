@@ -8,22 +8,29 @@ import { CacheSettings } from '/@/renderer/features/settings/components/window/c
 import { UpdateSettings } from '/@/renderer/features/settings/components/window/update-settings';
 import { Divider } from '/@/shared/components/divider/divider';
 import { Stack } from '/@/shared/components/stack/stack';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 
 const sections = [
     { component: UpdateSettings, key: 'update' },
-    { component: AnalyticsSettings, key: 'analytics' },
+    {
+        component: AnalyticsSettings,
+        hidden: !PRODUCT_FEATURES.analytics,
+        key: 'analytics',
+    },
     { component: ExportImportSettings, key: 'export-import' },
     { component: LoggerSettings, key: 'logger' },
     { component: CacheSettings, key: 'cache' },
 ];
 
 export const AdvancedTab = memo(() => {
+    const visible = sections.filter((section) => !section.hidden);
+
     return (
         <Stack gap="md">
-            {sections.map(({ component: Section, key }, index) => (
+            {visible.map(({ component: Section, key }, index) => (
                 <Fragment key={key}>
                     <Section />
-                    {index < sections.length - 1 && <Divider />}
+                    {index < visible.length - 1 && <Divider />}
                 </Fragment>
             ))}
         </Stack>

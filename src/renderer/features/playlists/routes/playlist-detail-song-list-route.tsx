@@ -36,6 +36,7 @@ import { Spinner } from '/@/shared/components/spinner/spinner';
 import { Stack } from '/@/shared/components/stack/stack';
 import { Text } from '/@/shared/components/text/text';
 import { toast } from '/@/shared/components/toast/toast';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { LibraryItem, ServerType } from '/@/shared/types/domain-types';
 import { ItemListKey } from '/@/shared/types/types';
 
@@ -240,7 +241,8 @@ const PlaylistDetailSongListRoute = () => {
         setIsSidebarOpen,
     ]);
 
-    const isEditingSmartPlaylist = isSmartPlaylist && mode === 'edit';
+    const isEditingSmartPlaylist =
+        PRODUCT_FEATURES.smartPlaylistQueryEditor && isSmartPlaylist && mode === 'edit';
 
     const editActions = isEditingSmartPlaylist && (
         <>

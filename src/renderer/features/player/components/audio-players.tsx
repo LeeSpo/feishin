@@ -48,6 +48,7 @@ import {
 } from '/@/renderer/store';
 import { logger } from '/@/renderer/utils/logger';
 import { toast } from '/@/shared/components/toast/toast';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { LibraryItem } from '/@/shared/types/domain-types';
 import { PlayerType } from '/@/shared/types/types';
 const CODEC_PROBES = [
@@ -134,22 +135,30 @@ export const AudioPlayers = () => {
             <SleepTimerHook />
             <ScrobbleHook />
             <PowerSaveBlockerHook />
-            <DiscordRpcHook />
+            {PRODUCT_FEATURES.discordRpc && <DiscordRpcHook />}
             <MPRISHook />
             <MainPlayerListenerHook />
             <MediaSessionHook />
             <PlaybackHotkeysHook />
-            <RemoteHook />
-            <RemoteLibraryHook />
-            <RemoteQueuePushHook />
-            <RemoteRadioPushHook />
-            <RemoteSettingsPushHook />
+            {PRODUCT_FEATURES.phoneRemote && (
+                <>
+                    <RemoteHook />
+                    <RemoteLibraryHook />
+                    <RemoteQueuePushHook />
+                    <RemoteRadioPushHook />
+                    <RemoteSettingsPushHook />
+                </>
+            )}
             <AutoDJHook />
             <QueueRestoreTimestampHook />
             <InitialTimestampRestoreHook />
             <UpdateCurrentSongHook />
-            <RadioAudioInstanceHook />
-            <RadioMetadataHook />
+            {PRODUCT_FEATURES.internetRadio && (
+                <>
+                    <RadioAudioInstanceHook />
+                    <RadioMetadataHook />
+                </>
+            )}
             <VisualizerSystemAudioBridgeHook />
             <AutosaveHook />
             <AudioPlayersContent
@@ -370,29 +379,39 @@ const AudioPlayersContent = ({
         };
     }, [serverId]);
 
-    if (playbackType === PlayerType.LOCAL) {
+    const effectivePlaybackType =
+        !PRODUCT_FEATURES.dlnaJukebox &&
+        (playbackType === PlayerType.DLNA || playbackType === PlayerType.JUKEBOX)
+            ? PlayerType.WEB
+            : playbackType;
+
+    if (effectivePlaybackType === PlayerType.LOCAL) {
         return <MpvPlayer />;
     }
 
-    if (playbackType === PlayerType.WEB) {
-        if (isRadioActive) {
+    if (effectivePlaybackType === PlayerType.WEB) {
+        if (PRODUCT_FEATURES.internetRadio && isRadioActive) {
             return <RadioWebPlayer />;
         }
 
         return <WebPlayer />;
     }
 
-    if (playbackType === PlayerType.DLNA) {
+    if (PRODUCT_FEATURES.dlnaJukebox && effectivePlaybackType === PlayerType.DLNA) {
         return (
             <ComponentErrorBoundary>
-                {isRadioActive ? <RadioDlnaPlayer /> : <DlnaPlayer />}
+                {PRODUCT_FEATURES.internetRadio && isRadioActive ? (
+                    <RadioDlnaPlayer />
+                ) : (
+                    <DlnaPlayer />
+                )}
             </ComponentErrorBoundary>
         );
     }
 
-    if (playbackType === PlayerType.JUKEBOX) {
+    if (PRODUCT_FEATURES.dlnaJukebox && effectivePlaybackType === PlayerType.JUKEBOX) {
         return <JukeboxPlayer />;
     }
 
-    return null;
+    return <WebPlayer />;
 };

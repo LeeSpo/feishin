@@ -26,6 +26,7 @@ import {
     useSettingsStoreActions,
 } from '/@/renderer/store';
 import { initCustomThemes } from '/@/renderer/store/custom-themes.store';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 import { useAppTheme } from '/@/renderer/themes/use-app-theme';
 import { sanitizeCss } from '/@/renderer/utils/sanitize';
 import { WebAudio } from '/@/shared/types/types';
@@ -47,10 +48,12 @@ export const App = () => {
     // Custom themes must be loaded (and registered into the shared theme
     // registry) before the first render of ThemedApp, otherwise a user whose
     // selected theme is a custom one would flash the default theme first.
-    const [customThemesReady, setCustomThemesReady] = useState(!isElectron());
+    const [customThemesReady, setCustomThemesReady] = useState(
+        !isElectron() || !PRODUCT_FEATURES.diskCustomThemes,
+    );
 
     useEffect(() => {
-        if (!isElectron()) return;
+        if (!isElectron() || !PRODUCT_FEATURES.diskCustomThemes) return;
 
         initCustomThemes()
             .catch((error) => console.error('Failed to load custom themes', error))
@@ -250,6 +253,7 @@ const GlobalShortcutsEffect = () => {
     const { bindings } = useHotkeySettings();
 
     useEffect(() => {
+        if (!PRODUCT_FEATURES.complexGlobalHotkeys) return;
         if (isElectron()) {
             ipc?.send('set-global-shortcuts', bindings);
         }

@@ -16,6 +16,7 @@ import { Select } from '/@/shared/components/select/select';
 import { Slider } from '/@/shared/components/slider/slider';
 import { Switch } from '/@/shared/components/switch/switch';
 import { toast } from '/@/shared/components/toast/toast';
+import { PRODUCT_FEATURES } from '/@/shared/lib/product-features';
 
 export const ScrobbleSettings = memo(() => {
     const { t } = useTranslation();
@@ -179,5 +180,9 @@ export const ScrobbleSettings = memo(() => {
         },
     ];
 
-    return <SettingsSection options={scrobbleOptions} title={t('page.setting.scrobble')} />;
+    const options = PRODUCT_FEATURES.complexScrobbleExtras
+        ? scrobbleOptions
+        : scrobbleOptions.slice(0, 1);
+
+    return <SettingsSection options={options} title={t('page.setting.scrobble')} />;
 });

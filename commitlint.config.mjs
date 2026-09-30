@@ -20,6 +20,7 @@ const config = {
                 'servers',
                 'sharing',
                 'tag-editor',
+                'tauri',
                 'theme',
                 'ui',
                 'visualizer',
