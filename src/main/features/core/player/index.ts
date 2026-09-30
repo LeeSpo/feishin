@@ -7,6 +7,7 @@ import process from 'process';
 
 import { getMainWindow, sendToastToRenderer } from '../../../index';
 import log from '../../../logger';
+import { getMusicCache } from '../music-cache';
 import { store } from '../settings';
 
 import { isMacOS, isWindows } from '/@/main/env';
@@ -28,6 +29,15 @@ let mpvInstance: MpvAPI | null = null;
 // alongside the one being started.
 let mpvCreatePromise: null | Promise<MpvAPI> = null;
 let currentPlayerData: null | PlayerData = null;
+let cachedQueueSources: (string | undefined)[] = [];
+
+const holdCachedSources = async (sources: (string | undefined)[]) => {
+    try {
+        await getMusicCache().holdSources(sources);
+    } catch {
+        log.warn('Unable to update music cache playback protection');
+    }
+};
 const socketPath = isWindows() ? `\\\\.\\pipe\\mpvserver-${pid}` : `/tmp/node-mpv-${pid}.sock`;
 
 // While quitting/restarting mpv, playlist-pos goes to -1 and node-mpv emits stopped/paused/
@@ -394,6 +404,8 @@ ipcMain.on('player-quit', async () => {
         mpvLog({ action: 'Failed to quit mpv' }, err);
     } finally {
         mpvInstance = null;
+        cachedQueueSources = [];
+        await holdCachedSources([]);
     }
 });
 
@@ -402,8 +414,10 @@ ipcMain.handle('player-is-running', async () => {
 });
 
 ipcMain.handle('player-clean-up', async () => {
-    getMpvInstance()?.stop();
-    getMpvInstance()?.clearPlaylist();
+    await getMpvInstance()?.stop();
+    await getMpvInstance()?.clearPlaylist();
+    cachedQueueSources = [];
+    await holdCachedSources([]);
 });
 
 ipcMain.on('player-start', async () => {
@@ -436,6 +450,8 @@ ipcMain.on('player-pause', async () => {
 ipcMain.on('player-stop', async () => {
     try {
         await getMpvInstance()?.stop();
+        cachedQueueSources = [];
+        await holdCachedSources([]);
     } catch (err: any | NodeMpvError) {
         mpvLog({ action: 'Failed to stop mpv playback' }, err);
     }
@@ -479,10 +495,13 @@ ipcMain.on('player-seek-to', async (_event, time: number) => {
 
 // Sets the queue in position 0 and 1 to the given data. Used when manually starting a song or using the next/prev buttons
 ipcMain.on('player-set-queue', async (_event, current?: string, next?: string, pause?: boolean) => {
+    await holdCachedSources([...cachedQueueSources, current, next]);
     if (!current && !next) {
         try {
             await getMpvInstance()?.clearPlaylist();
             await getMpvInstance()?.pause();
+            cachedQueueSources = [];
+            await holdCachedSources([]);
             return;
         } catch (err: any | NodeMpvError) {
             mpvLog({ action: `Failed to clear play queue` }, err);
@@ -508,6 +527,7 @@ ipcMain.on('player-set-queue', async (_event, current?: string, next?: string, p
             if (next) {
                 await getMpvInstance()?.load(next, 'append');
             }
+            cachedQueueSources = [current, next];
         }
 
         if (pause) {
@@ -519,6 +539,7 @@ ipcMain.on('player-set-queue', async (_event, current?: string, next?: string, p
     } catch (err: any | NodeMpvError) {
         mpvLog({ action: `Failed to set play queue` }, err);
     } finally {
+        await holdCachedSources(cachedQueueSources);
         if (shouldSuppressLoadEvents) {
             suppressRendererPlaybackEvents = false;
         }
@@ -527,6 +548,7 @@ ipcMain.on('player-set-queue', async (_event, current?: string, next?: string, p
 
 // Replaces the queue in position 1 to the given data
 ipcMain.on('player-set-queue-next', async (_event, url?: string) => {
+    await holdCachedSources([...cachedQueueSources, url]);
     try {
         const size = await getMpvInstance()?.getPlaylistSize();
 
@@ -535,10 +557,13 @@ ipcMain.on('player-set-queue-next', async (_event, url?: string) => {
         }
 
         if (url) {
-            getMpvInstance()?.load(url, 'append');
+            await getMpvInstance()?.load(url, 'append');
         }
+        cachedQueueSources = [cachedQueueSources[0], url];
     } catch (err: any | NodeMpvError) {
         mpvLog({ action: `Failed to set play queue` }, err);
+    } finally {
+        await holdCachedSources(cachedQueueSources);
     }
 });
 
@@ -548,6 +573,7 @@ ipcMain.on('player-auto-next', async (_event, url?: string) => {
     // This allows us to easily set update the next song in the queue without
     // disturbing the currently playing song
 
+    await holdCachedSources([...cachedQueueSources, url]);
     try {
         await getMpvInstance()
             ?.playlistRemove(0)
@@ -558,8 +584,11 @@ ipcMain.on('player-auto-next', async (_event, url?: string) => {
         if (url) {
             await getMpvInstance()?.load(url, 'append');
         }
+        cachedQueueSources = [cachedQueueSources[1], url];
     } catch (err: any | NodeMpvError) {
         mpvLog({ action: `Failed to load next song` }, err);
+    } finally {
+        await holdCachedSources(cachedQueueSources);
     }
 });
 

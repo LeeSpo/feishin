@@ -1648,5 +1648,52 @@
                 "z": "Z"
             }
         }
+    },
+    "musicCache": {
+        "title": "Local music",
+        "localDescription": "Play local audio with MPV without connecting to the server. Albums and playlists keep the track list captured when saved. Offline play history is not submitted to the server.",
+        "settings": "Music cache and offline storage",
+        "automatic": "Automatic music cache",
+        "automaticDescription": "Save complete audio while MPV plays. Skipping or seeking may leave a song uncached.",
+        "limit": "Automatic cache limit (GiB)",
+        "limitDescription": "Remove the least recently used automatic files when full. Offline saves have separate storage and are retained until removed.",
+        "usage": "Automatic cache: {{automatic}} · Offline saves: {{saved}}",
+        "clearAutomatic": "Clear automatic music cache",
+        "clearDescription": "Remove automatic music files. Offline saves are retained. Files in use are removed after playback releases them.",
+        "openFolder": "Open music storage folder",
+        "save": "Save for offline playback",
+        "saveRequested": "Offline saves have been queued",
+        "savedSongs": "Saved songs",
+        "collections": "Albums and playlists",
+        "returnOnline": "Return to server library",
+        "playAll": "Play all available songs",
+        "missingFile": "Local audio is missing. Retry the download from Local music.",
+        "reconnectAccount": "Reconnect to the original server account before updating this save.",
+        "album": "Album",
+        "playlist": "Playlist",
+        "song": "Song",
+        "source": "Server / account",
+        "quality": "Saved quality",
+        "statusLabel": "Status",
+        "actions": "Actions",
+        "original": "Original quality",
+        "update": "Update saved snapshot",
+        "keep": "Keep offline",
+        "cancelSave": "Cancel song retention",
+        "removeCollection": "Remove saved collection",
+        "removeCollectionDescription": "Release this album or playlist’s offline retention. Shared songs remain retained by other saves; the remaining songs become automatic cache.",
+        "removeFile": "Remove local file",
+        "removeFileDescription": "Remove this audio file and its save references. Files playing or preloaded are deleted after they are released.",
+        "empty": "No local music in this view yet.",
+        "status": {
+            "queued": "Queued",
+            "downloading": "Downloading",
+            "ready": "Available offline",
+            "failed": "Failed",
+            "interrupted": "Interrupted",
+            "missing": "File missing"
+        },
+        "loading": "Loading…",
+        "addToQueue": "Add to queue"
     }
 }

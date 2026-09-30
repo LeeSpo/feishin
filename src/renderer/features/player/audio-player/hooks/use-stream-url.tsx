@@ -16,7 +16,7 @@ export function useSongUrl(
     );
 
     const { data: queryStreamUrl } = useQuery({
-        enabled: Boolean(song?._serverId) && !shouldReusePrior,
+        enabled: Boolean(song?._serverId) && !song?._localCacheKey && !shouldReusePrior,
         queryFn: () =>
             api.controller.getStreamUrl({
                 apiClientProps: { serverId: song!._serverId },
@@ -41,7 +41,7 @@ export function useSongUrl(
     });
 
     useEffect(() => {
-        if (!song?._serverId) {
+        if (!song?._serverId || song._localCacheKey) {
             prior.current = ['', ''];
             return;
         }
@@ -52,7 +52,7 @@ export function useSongUrl(
 
         // Save resolved URL to avoid restarting current track on transcode setting changes.
         prior.current = [song._uniqueId, queryStreamUrl];
-    }, [song?._serverId, song?._uniqueId, queryStreamUrl]);
+    }, [song?._serverId, song?._uniqueId, song?._localCacheKey, queryStreamUrl]);
 
     useEffect(() => {
         if (!song?._serverId) {
@@ -60,7 +60,7 @@ export function useSongUrl(
         }
     }, [song?._serverId]);
 
-    return shouldReusePrior ? prior.current[1] : queryStreamUrl;
+    return song?._localCacheKey ? undefined : shouldReusePrior ? prior.current[1] : queryStreamUrl;
 }
 
 export const getSongUrl = async (

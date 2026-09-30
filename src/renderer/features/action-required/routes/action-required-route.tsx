@@ -1,6 +1,7 @@
 import { openModal } from '@mantine/modals';
+import isElectron from 'is-electron';
 import { useTranslation } from 'react-i18next';
-import { Navigate } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 
 import { PageHeader } from '/@/renderer/components/page-header/page-header';
 import { ActionRequiredContainer } from '/@/renderer/features/action-required/components/action-required-container';
@@ -22,6 +23,7 @@ import { Stack } from '/@/shared/components/stack/stack';
 
 const ActionRequiredRoute = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const currentServer = useCurrentServerWithCredential();
     const isServerRequired = !currentServer;
     const isCredentialRequired = currentServer && !currentServer.credential;
@@ -69,6 +71,14 @@ const ActionRequiredRoute = () => {
                             )}
                         </Group>
                         <Stack className={styles.actions}>
+                            {isElectron() && (
+                                <Button
+                                    onClick={() => navigate(AppRoute.LOCAL_MUSIC)}
+                                    variant="default"
+                                >
+                                    {t('musicCache.title')}
+                                </Button>
+                            )}
                             {canReturnHome && <Navigate to={AppRoute.HOME} />}
                             {/* This should be displayed if a credential is required */}
                             {isCredentialRequired && !isServerLock && (

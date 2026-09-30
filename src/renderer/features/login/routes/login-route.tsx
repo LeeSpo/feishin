@@ -2,7 +2,7 @@ import isElectron from 'is-electron';
 import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 
 import { api } from '/@/renderer/api';
 import { PageHeader } from '/@/renderer/components/page-header/page-header';
@@ -64,6 +64,7 @@ const SERVER_NAMES: Record<ServerType, string> = {
 
 const LoginRoute = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const { addServer, deleteServer, setCurrentServer, updateServer } = useAuthStoreActions();
     const currentServer = useCurrentServer();
@@ -187,6 +188,14 @@ const LoginRoute = () => {
                         <TextTitle fw={600}>{t('error.genericError')}</TextTitle>
                         <Text fw={500}>{t('error.serverNotSelectedError')}</Text>
                         <Code block>{JSON.stringify(config, null, 2)}</Code>
+                        {isElectron() && (
+                            <Button
+                                onClick={() => navigate(AppRoute.LOCAL_MUSIC)}
+                                variant="default"
+                            >
+                                {t('musicCache.title')}
+                            </Button>
+                        )}
                     </Stack>
                 </Center>
             </AnimatedPage>
@@ -304,6 +313,14 @@ const LoginRoute = () => {
                 <Paper p="xl" style={{ maxWidth: '400px', width: '100%' }}>
                     <form onSubmit={handleSubmit}>
                         <Stack gap="xl">
+                            {isElectron() && (
+                                <Button
+                                    onClick={() => navigate(AppRoute.LOCAL_MUSIC)}
+                                    variant="default"
+                                >
+                                    {t('musicCache.title')}
+                                </Button>
+                            )}
                             <Stack align="center" gap="md">
                                 <img
                                     alt={serverDisplayName}

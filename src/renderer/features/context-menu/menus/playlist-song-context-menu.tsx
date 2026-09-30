@@ -8,6 +8,7 @@ import { GoToAction } from '/@/renderer/features/context-menu/actions/go-to-acti
 import { PlayAction } from '/@/renderer/features/context-menu/actions/play-action';
 import { PlayTrackRadioAction } from '/@/renderer/features/context-menu/actions/play-track-radio-action';
 import { RemoveFromPlaylistAction } from '/@/renderer/features/context-menu/actions/remove-from-playlist-action';
+import { SaveOfflineAction } from '/@/renderer/features/context-menu/actions/save-offline-action';
 import { SetFavoriteAction } from '/@/renderer/features/context-menu/actions/set-favorite-action';
 import { SetRatingAction } from '/@/renderer/features/context-menu/actions/set-rating-action';
 import { ShareAction } from '/@/renderer/features/context-menu/actions/share-action';
@@ -42,6 +43,7 @@ export const PlaylistSongContextMenu = ({ items, type }: PlaylistSongContextMenu
             <SetRatingAction ids={ids} itemType={type} />
             <ContextMenu.Divider />
             <DownloadAction ids={ids} />
+            <SaveOfflineAction items={items} itemType={LibraryItem.SONG} songs={items} />
             <ShareAction ids={ids} itemType={type} />
             <ContextMenu.Divider />
             <GoToAction items={items} />

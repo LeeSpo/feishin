@@ -115,7 +115,11 @@ export const Lyrics = ({ fadeOutNoLyricsMessage = true, settingsKey = 'default' 
         return queryKeys.songs.lyrics(currentSong._serverId, { songId: currentSong.id });
     }, [currentSong]);
 
-    const shouldFetchLyrics = !isLyricsDisabled && !!currentSong?._serverId && !!currentSong?.id;
+    const shouldFetchLyrics =
+        !isLyricsDisabled &&
+        !currentSong?._localCacheKey &&
+        !!currentSong?._serverId &&
+        !!currentSong?.id;
     const isWaitingToFetchLyrics = shouldFetchLyrics && pendingSongId !== currentSong?.id;
 
     const { data, isLoading, isRefetching } = useQuery(
@@ -123,7 +127,7 @@ export const Lyrics = ({ fadeOutNoLyricsMessage = true, settingsKey = 'default' 
             {
                 options: {
                     enabled:
-                        !!pendingSongId && pendingSongId === currentSong?.id && !isLyricsDisabled,
+                        !!pendingSongId && pendingSongId === currentSong?.id && shouldFetchLyrics,
                 },
                 query: { songId: currentSong?.id || '' },
                 serverId: currentSong?._serverId || '',

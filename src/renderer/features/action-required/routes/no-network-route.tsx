@@ -1,3 +1,4 @@
+import isElectron from 'is-electron';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
@@ -41,6 +42,11 @@ const NoNetworkRoute = () => {
                     >
                         {t('common.retry')}
                     </Button>
+                    {isElectron() && (
+                        <Button onClick={() => navigate(AppRoute.LOCAL_MUSIC)} variant="default">
+                            {t('musicCache.title')}
+                        </Button>
+                    )}
                 </Stack>
             </Center>
         </AnimatedPage>

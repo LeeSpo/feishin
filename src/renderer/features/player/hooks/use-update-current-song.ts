@@ -22,7 +22,7 @@ export const useUpdateCurrentSong = () => {
         async (properties: { index: number; song: QueueSong | undefined }) => {
             const currentSong = properties.song;
 
-            if (!currentSong?.id || !currentSong?._serverId) {
+            if (!currentSong?.id || !currentSong?._serverId || currentSong._localCacheKey) {
                 return;
             }
 

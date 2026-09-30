@@ -153,6 +153,14 @@ export const useScrobble = () => {
     const songChangeTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const notifyTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+    useEffect(
+        () => () => {
+            clearTimeout(songChangeTimeoutRef.current);
+            clearTimeout(notifyTimeoutRef.current);
+        },
+        [],
+    );
+
     useEffect(() => {
         imageUrlRef.current = imageUrl;
     }, [imageUrl]);
@@ -246,7 +254,12 @@ export const useScrobble = () => {
 
     const handleScrobbleFromProgress = useCallback(
         (properties: { timestamp: number }, prev: { timestamp: number }) => {
-            if (!isScrobbleEnabled || isPrivateModeEnabled) return;
+            if (
+                !isScrobbleEnabled ||
+                isPrivateModeEnabled ||
+                usePlayerStore.getState().getCurrentSong()?._localCacheKey
+            )
+                return;
 
             const currentSong = usePlayerStore.getState().getCurrentSong();
             const mediaType = currentSong?._itemType.includes('song') ? 'song' : 'podcast';
@@ -423,7 +436,11 @@ export const useScrobble = () => {
                 }, 1000);
             }
 
-            if (!isScrobbleEnabled || isPrivateModeEnabled) {
+            if (
+                !isScrobbleEnabled ||
+                isPrivateModeEnabled ||
+                usePlayerStore.getState().getCurrentSong()?._localCacheKey
+            ) {
                 previousSongRef.current = currentSong;
                 previousTimestampRef.current = 0;
                 stopPositionRef.current = 0;
@@ -517,7 +534,11 @@ export const useScrobble = () => {
     const handleScrobbleFromSeek = useCallback(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (properties: { timestamp: number }, _prev: { timestamp: number }) => {
-            if (!isScrobbleEnabled || isPrivateModeEnabled) {
+            if (
+                !isScrobbleEnabled ||
+                isPrivateModeEnabled ||
+                usePlayerStore.getState().getCurrentSong()?._localCacheKey
+            ) {
                 return;
             }
 
@@ -598,7 +619,11 @@ export const useScrobble = () => {
 
     const handleScrobbleFromStatus = useCallback(
         (properties: { status: PlayerStatus }, prev: { status: PlayerStatus }) => {
-            if (!isScrobbleEnabled || isPrivateModeEnabled) {
+            if (
+                !isScrobbleEnabled ||
+                isPrivateModeEnabled ||
+                usePlayerStore.getState().getCurrentSong()?._localCacheKey
+            ) {
                 return;
             }
 
@@ -735,7 +760,11 @@ export const useScrobble = () => {
     );
 
     const handleScrobbleFromRepeat = useCallback(() => {
-        if (!isScrobbleEnabled || isPrivateModeEnabled) {
+        if (
+            !isScrobbleEnabled ||
+            isPrivateModeEnabled ||
+            usePlayerStore.getState().getCurrentSong()?._localCacheKey
+        ) {
             return;
         }
 
@@ -803,7 +832,11 @@ export const useScrobble = () => {
     useEffect(() => {
         registerScrobbleManualHandlers({
             forceSubmitScrobble: () => {
-                if (!isScrobbleEnabled || isPrivateModeEnabled) {
+                if (
+                    !isScrobbleEnabled ||
+                    isPrivateModeEnabled ||
+                    usePlayerStore.getState().getCurrentSong()?._localCacheKey
+                ) {
                     return;
                 }
 
@@ -842,7 +875,11 @@ export const useScrobble = () => {
                 flushScrobbleDebug();
             },
             resetListenedState: () => {
-                if (!isScrobbleEnabled || isPrivateModeEnabled) {
+                if (
+                    !isScrobbleEnabled ||
+                    isPrivateModeEnabled ||
+                    usePlayerStore.getState().getCurrentSong()?._localCacheKey
+                ) {
                     return;
                 }
 
@@ -896,7 +933,9 @@ export const ScrobbleHook = () => {
     const isScrobbleEnabled = useSettingsStore((state) => state.playback.scrobble.enabled);
     const privateMode = useAppStore((state) => state.privateMode);
 
-    if (!isScrobbleEnabled || privateMode) {
+    const localSong = usePlayerSong()?._localCacheKey;
+
+    if (!isScrobbleEnabled || privateMode || localSong) {
         return null;
     }
 

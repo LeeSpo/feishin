@@ -2,6 +2,7 @@ import './autodiscover';
 import './dlna';
 import './custom-themes';
 import './lyrics';
+import './music-cache';
 import './player';
 import './remote';
 import './settings';

@@ -9,6 +9,7 @@ import { UpdateAvailableButton } from '/@/renderer/features/settings/components/
 import { openSettingsModal } from '/@/renderer/features/settings/utils/open-settings-modal';
 import { ServerSelector } from '/@/renderer/features/sidebar/components/server-selector';
 import { openReleaseNotesModal } from '/@/renderer/release-notes-modal';
+import { AppRoute } from '/@/renderer/router/routes';
 import {
     useAppStore,
     useAppStoreActions,
@@ -152,6 +153,17 @@ export const AppMenu = () => {
 
     const menuConfig: MenuItem[] = [
         ...serverHeaderMenuItems,
+        {
+            condition: isElectron(),
+            id: 'local-music',
+            item: {
+                icon: 'download',
+                label: t('musicCache.title'),
+                onClick: () => navigate(AppRoute.LOCAL_MUSIC),
+                type: 'item',
+            },
+            type: 'conditional-item',
+        },
         {
             icon: 'search',
             id: 'command-palette',

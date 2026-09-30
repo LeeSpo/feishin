@@ -6,8 +6,8 @@ import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { playerHandoff } from './player-handoff';
 
 import { eventEmitter } from '/@/renderer/events/event-emitter';
+import { getMpvSongUrl as getSongUrl } from '/@/renderer/features/music-cache/music-cache-api';
 import { usePlayerEvents } from '/@/renderer/features/player/audio-player/hooks/use-player-events';
-import { getSongUrl } from '/@/renderer/features/player/audio-player/hooks/use-stream-url';
 import { AudioPlayer, PlayerOnProgressProps } from '/@/renderer/features/player/audio-player/types';
 import { useRadioStore } from '/@/renderer/features/radio/hooks/use-radio-player';
 import { getMpvProperties } from '/@/renderer/features/settings/components/playback/mpv-properties';
@@ -21,6 +21,7 @@ import {
     useSettingsStore,
 } from '/@/renderer/store';
 import { logger } from '/@/renderer/utils/logger';
+import { toast } from '/@/shared/components/toast/toast';
 import { PlayerStatus } from '/@/shared/types/types';
 
 export interface MpvPlayerEngineHandle extends AudioPlayer {}
@@ -158,7 +159,10 @@ export const MpvPlayerEngine = (props: MpvPlayerEngineProps) => {
                         ? await getSongUrl(playerData.currentSong, transcode, true)
                         : undefined;
                     nextSongUrl = playerData.nextSong
-                        ? await getSongUrl(playerData.nextSong, transcode, true)
+                        ? await getSongUrl(playerData.nextSong, transcode, true).catch(() => {
+                              logger.warn('Unable to prepare next track during initialization');
+                              return undefined;
+                          })
                         : undefined;
                 } catch (err) {
                     logger.error('mpv re-init: getSongUrl failed, queue left unpopulated', {
@@ -169,7 +173,7 @@ export const MpvPlayerEngine = (props: MpvPlayerEngineProps) => {
                 if (currentSongUrl && !hasPopulatedQueueRef.current && mpvPlayer) {
                     const isDifferentNextSong =
                         playerData.nextSong &&
-                        playerData.nextSong.id !== playerData.currentSong?.id;
+                        playerData.nextSong._uniqueId !== playerData.currentSong?._uniqueId;
                     const safeNextSongUrl = isDifferentNextSong ? nextSongUrl : undefined;
                     const shouldPause =
                         usePlayerStore.getState().player.status !== PlayerStatus.PLAYING;
@@ -331,7 +335,9 @@ export const MpvPlayerEngine = (props: MpvPlayerEngineProps) => {
 
         const handleOnAutoNext = () => {
             mediaAutoNext();
-            handleMpvAutoNext(transcode);
+            void handleMpvAutoNext(transcode).catch(() =>
+                logger.warn('Unable to prepare next track'),
+            );
         };
 
         const handleTrackEnded = () => {
@@ -342,7 +348,10 @@ export const MpvPlayerEngine = (props: MpvPlayerEngineProps) => {
                 return;
             }
 
-            mediaAutoNext();
+            const next = mediaAutoNext();
+            if (next.status !== PlayerStatus.STOPPED) {
+                void replaceMpvQueue(transcode).catch(handlePlaybackSourceError);
+            }
         };
 
         mpvPlayerListener.rendererAutoNext(handleOnAutoNext);
@@ -357,10 +366,10 @@ export const MpvPlayerEngine = (props: MpvPlayerEngineProps) => {
     usePlayerEvents(
         {
             onMediaNext: () => {
-                replaceMpvQueue(transcode);
+                void replaceMpvQueue(transcode).catch(handlePlaybackSourceError);
             },
             onMediaPrev: () => {
-                replaceMpvQueue(transcode);
+                void replaceMpvQueue(transcode).catch(handlePlaybackSourceError);
             },
             onNextSongInsertion: async (song) => {
                 const radioState = useRadioStore.getState();
@@ -369,15 +378,19 @@ export const MpvPlayerEngine = (props: MpvPlayerEngineProps) => {
                     return;
                 }
 
-                const nextSongUrl = song ? await getSongUrl(song, transcode, true) : undefined;
-                mpvPlayer?.setQueueNext(nextSongUrl);
+                try {
+                    const nextSongUrl = song ? await getSongUrl(song, transcode, true) : undefined;
+                    await mpvPlayer?.setQueueNext(nextSongUrl);
+                } catch {
+                    logger.warn('Unable to prepare inserted next track');
+                }
             },
             onPlayerPlay: () => {
-                replaceMpvQueue(transcode);
+                void replaceMpvQueue(transcode).catch(handlePlaybackSourceError);
             },
             onQueueCleared: () => {},
             onQueueRestored: () => {
-                replaceMpvQueue(transcode);
+                void replaceMpvQueue(transcode).catch(handlePlaybackSourceError);
             },
         },
         [transcode],
@@ -443,6 +456,13 @@ async function handleMpvAutoNext(transcode: {
     mpvPlayer?.autoNext(nextSongUrl);
 }
 
+function handlePlaybackSourceError(error: unknown) {
+    logger.warn('Unable to resolve playback source');
+    usePlayerStore.getState().mediaStop();
+    mpvPlayer?.stop();
+    toast.error({ message: error instanceof Error ? error.message : 'Audio is unavailable' });
+}
+
 async function replaceMpvQueue(transcode: {
     bitrate?: number | undefined;
     enabled: boolean;
@@ -460,9 +480,12 @@ async function replaceMpvQueue(transcode: {
         ? await getSongUrl(playerData.currentSong, transcode, true)
         : undefined;
     const isDifferentNextSong =
-        playerData.nextSong && playerData.nextSong.id !== playerData.currentSong?.id;
+        playerData.nextSong && playerData.nextSong._uniqueId !== playerData.currentSong?._uniqueId;
     const nextSongUrl = isDifferentNextSong
-        ? await getSongUrl(playerData.nextSong!, transcode, true)
+        ? await getSongUrl(playerData.nextSong!, transcode, true).catch(() => {
+              logger.warn('Unable to prepare next track');
+              return undefined;
+          })
         : undefined;
-    mpvPlayer?.setQueue(currentSongUrl, nextSongUrl, false);
+    mpvPlayer?.setQueue(currentSongUrl, nextSongUrl, playerData.status !== PlayerStatus.PLAYING);
 }

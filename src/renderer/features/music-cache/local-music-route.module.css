@@ -1,0 +1,23 @@
+.content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--theme-spacing-md);
+    min-height: 0;
+    padding: var(--theme-spacing-md);
+}
+
+.list {
+    flex: 1;
+    min-height: 0;
+}
+
+.settings {
+    padding: var(--theme-spacing-sm);
+    border: 1px solid var(--theme-colors-border);
+    border-radius: var(--theme-radius-md);
+}
+
+.settings > summary {
+    cursor: pointer;
+}

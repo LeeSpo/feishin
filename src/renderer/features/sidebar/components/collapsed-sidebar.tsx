@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import isElectron from 'is-electron';
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -173,6 +174,16 @@ export const CollapsedSidebar = () => {
                             to={item.route}
                         />
                     ),
+                )}
+                {isElectron() && (
+                    <CollapsedSidebarItem
+                        activeIcon={<Icon fill="primary" icon="download" size="25" />}
+                        component={NavLink}
+                        icon={<Icon icon="download" size="25" />}
+                        label={t('musicCache.title')}
+                        route={AppRoute.LOCAL_MUSIC}
+                        to={AppRoute.LOCAL_MUSIC}
+                    />
                 )}
             </ScrollArea>
         </motion.div>

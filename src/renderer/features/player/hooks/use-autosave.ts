@@ -13,7 +13,12 @@ export const useAutosave = () => {
     const { mutate: savePlayQueue } = useSaveQueue();
 
     useEffect(() => {
-        if (enabled && server?.type && server.type !== ServerType.JELLYFIN) {
+        if (
+            enabled &&
+            !currentSong?._localCacheKey &&
+            server?.type &&
+            server.type !== ServerType.JELLYFIN
+        ) {
             if (currentSong?._uniqueId !== priorSongId.current) {
                 if (songCount.current === count) {
                     savePlayQueue();
@@ -25,7 +30,14 @@ export const useAutosave = () => {
                 priorSongId.current = currentSong?._uniqueId;
             }
         }
-    }, [enabled, count, currentSong?._uniqueId, savePlayQueue, server?.type]);
+    }, [
+        enabled,
+        count,
+        currentSong?._uniqueId,
+        currentSong?._localCacheKey,
+        savePlayQueue,
+        server?.type,
+    ]);
 };
 
 export const AutosaveHook = () => {

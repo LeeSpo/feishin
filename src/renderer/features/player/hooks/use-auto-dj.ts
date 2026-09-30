@@ -56,7 +56,7 @@ export const useAutoDJ = () => {
                     return;
                 }
 
-                if (!properties.song?.id) {
+                if (!properties.song?.id || properties.song._localCacheKey) {
                     return;
                 }
 

@@ -4,6 +4,7 @@ import isElectron from 'is-electron';
 import { memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { MusicCacheSettingsSection } from '/@/renderer/features/music-cache/music-cache-settings';
 import {
     SettingOption,
     SettingsSection,
@@ -101,6 +102,7 @@ export const CacheSettings = memo(() => {
     return (
         <>
             <SettingsSection options={options} title={t('page.setting.cache')} />
+            {isElectron() && <MusicCacheSettingsSection />}
             {isElectron() && (
                 <Button onClick={handleOpenApplicationDirectory} variant="default">
                     {t('action.openApplicationDirectory')}

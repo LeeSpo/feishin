@@ -21,6 +21,7 @@ import {
     SidebarSharedPlaylistList,
     useSidebarPlaylistAddDragMonitor,
 } from '/@/renderer/features/sidebar/components/sidebar-playlist-list';
+import { AppRoute } from '/@/renderer/router/routes';
 import {
     useAppStore,
     useAppStoreActions,
@@ -144,6 +145,14 @@ export const Sidebar = () => {
                             </Text>
                         </Accordion.Control>
                         <Accordion.Panel>
+                            {isElectron() && (
+                                <SidebarItem to={AppRoute.LOCAL_MUSIC}>
+                                    <Group gap="md">
+                                        <Icon icon="download" />
+                                        {t('musicCache.title')}
+                                    </Group>
+                                </SidebarItem>
+                            )}
                             {libraryItemsWithRoute.map((item) => {
                                 return (
                                     <SidebarItem key={`sidebar-${item.route}`} to={item.route}>

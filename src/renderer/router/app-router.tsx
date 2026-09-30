@@ -1,3 +1,4 @@
+import isElectron from 'is-electron';
 import { lazy, Suspense } from 'react';
 import { HashRouter, Route, Routes } from 'react-router';
 
@@ -37,6 +38,7 @@ const InvalidRoute = lazy(
 );
 
 const LoginRoute = lazy(() => import('/@/renderer/features/login/routes/login-route'));
+const LocalMusicRoute = lazy(() => import('/@/renderer/features/music-cache/local-music-route'));
 
 const NoNetworkRoute = lazy(
     () => import('/@/renderer/features/action-required/routes/no-network-route'),
@@ -344,6 +346,12 @@ export const AppRouter = () => {
                         </Route>
                         <Route element={<TitlebarOutlet />}>
                             <Route element={<ResponsiveLayout shell />}>
+                                {isElectron() && (
+                                    <Route
+                                        element={<LocalMusicRoute />}
+                                        path={AppRoute.LOCAL_MUSIC}
+                                    />
+                                )}
                                 <Route
                                     element={<ActionRequiredRoute />}
                                     path={AppRoute.ACTION_REQUIRED}
