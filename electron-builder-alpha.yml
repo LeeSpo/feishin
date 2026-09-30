@@ -40,7 +40,7 @@ mac:
           arch:
               - arm64
               - x64
-    icon: src/renderer/assets/icons/icon.icns
+    icon: media/feishin.icon
     type: distribution
     hardenedRuntime: false
     identity: '-'
@@ -51,6 +51,8 @@ mac:
         NSLocalNetworkUsageDescription: 'Local network is necessary for accessing servers hosted on the same system as Feishin'
 
 dmg:
+    # The app uses Icon Composer; DMG volume icons still use .icns.
+    icon: build/icon.icns
     contents: [{ x: 130, y: 220 }, { x: 410, y: 220, type: link, path: /Applications }]
 
 linux:

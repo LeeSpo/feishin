@@ -26,6 +26,8 @@ import type {
     MusicCacheSnapshot,
 } from '../../../../shared/types/music-cache';
 
+import { musicCacheSongFingerprint } from '../../../../shared/types/music-cache';
+
 const GIB = 1024 ** 3;
 const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
@@ -35,7 +37,7 @@ export const musicCacheKey = ({ account, profile, song }: MusicCacheDescriptor) 
         account,
         song.id,
         [profile.enabled, profile.format, profile.bitrate, profile.maxSampleRate],
-        [song.size, song.duration, song.container, song.sampleRate, song.bitDepth, song.channels],
+        musicCacheSongFingerprint(song),
     ]);
 
 interface Job {

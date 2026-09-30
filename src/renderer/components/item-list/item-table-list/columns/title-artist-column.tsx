@@ -13,6 +13,7 @@ import {
 } from '/@/renderer/components/item-list/item-table-list/item-table-list-column';
 import { useIsActiveRow } from '/@/renderer/components/item-list/item-table-list/item-table-list-context';
 import { JoinedArtists } from '/@/renderer/features/albums/components/joined-artists';
+import { MusicCacheIndicator } from '/@/renderer/features/music-cache/music-cache-indicator';
 import { ExplicitIndicator } from '/@/shared/components/explicit-indicator/explicit-indicator';
 import { Icon } from '/@/shared/components/icon/icon';
 import { Text } from '/@/shared/components/text/text';
@@ -138,6 +139,7 @@ export const QueueSongTitleArtistColumn = (props: ItemTableListInnerColumn) => {
                         {...titleLinkProps}
                     >
                         <ExplicitIndicator explicitStatus={song?.explicitStatus} />
+                        <MusicCacheIndicator song={song} />
                         {row.name as string}
                         {song?.trackSubtitle && props.itemType !== LibraryItem.QUEUE_SONG && (
                             <Text

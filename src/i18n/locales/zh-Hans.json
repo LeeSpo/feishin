@@ -1486,6 +1486,9 @@
         "customTags": "自定义标签"
     },
     "musicCache": {
+        "indicatorAutomatic": "已自动缓存，可被缓存清理移除",
+        "indicatorSaved": "已保存，可离线播放",
+        "serverDefaultFormat": "转码（服务器默认格式）",
         "title": "本地音乐",
         "localDescription": "本地音频使用 MPV 播放，无需连接服务器。专辑和歌单保留保存时的曲目清单。离线播放记录暂不回传服务器。",
         "settings": "音乐缓存与离线存储",

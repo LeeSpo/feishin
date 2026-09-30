@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import isElectron from 'is-electron';
 import { AnimatePresence, motion } from 'motion/react';
 import { MouseEvent, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';

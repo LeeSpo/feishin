@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router';
 
 import styles from './local-music-route.module.css';
 import { getOfflineCollectionSongs, retryOfflineSong, saveSongsOffline } from './music-cache-api';
+import { MusicCacheIndicator } from './music-cache-indicator';
 import { MusicCacheSettingsSection } from './music-cache-settings';
 import { useMusicCache } from './use-music-cache';
 
@@ -272,7 +273,15 @@ const LocalMusicRoute = () => {
                                 {entries.map((entry, index) => (
                                     <Table.Tr key={`${entry.key}:${index}`}>
                                         <Table.Td>
-                                            <Text weight={500}>{entry.song.name}</Text>
+                                            <Text weight={500}>
+                                                <MusicCacheIndicator
+                                                    song={{
+                                                        ...entry.song,
+                                                        _localCacheKey: entry.key,
+                                                    }}
+                                                />
+                                                {entry.song.name}
+                                            </Text>
                                             <Text isMuted size="sm">
                                                 {entry.song.artistName} · {entry.song.album}
                                             </Text>

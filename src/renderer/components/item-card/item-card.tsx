@@ -17,6 +17,7 @@ import {
 } from '/@/renderer/components/item-list/helpers/item-list-state';
 import { ItemControls } from '/@/renderer/components/item-list/types';
 import { JoinedArtists } from '/@/renderer/features/albums/components/joined-artists';
+import { MusicCacheIndicator } from '/@/renderer/features/music-cache/music-cache-indicator';
 import { useDragDrop } from '/@/renderer/hooks/use-drag-drop';
 import { AppRoute } from '/@/renderer/router/routes';
 import { useShowFavorites, useShowRatings } from '/@/renderer/store';
@@ -1486,6 +1487,9 @@ const ItemCardRow = memo(
                 })}
                 size={index > 0 ? 'sm' : 'md'}
             >
+                {row.id === 'name' && data._itemType === LibraryItem.SONG && (
+                    <MusicCacheIndicator song={data} />
+                )}
                 {formattedContent}
             </Text>
         );

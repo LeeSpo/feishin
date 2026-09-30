@@ -1650,6 +1650,9 @@
         }
     },
     "musicCache": {
+        "indicatorAutomatic": "Automatically cached; may be removed by cache cleanup",
+        "indicatorSaved": "Saved; available offline",
+        "serverDefaultFormat": "Transcoded (server default format)",
         "title": "Local music",
         "localDescription": "Play local audio with MPV without connecting to the server. Albums and playlists keep the track list captured when saved. Offline play history is not submitted to the server.",
         "settings": "Music cache and offline storage",

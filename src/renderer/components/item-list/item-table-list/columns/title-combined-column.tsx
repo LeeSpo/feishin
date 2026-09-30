@@ -14,6 +14,7 @@ import {
 } from '/@/renderer/components/item-list/item-table-list/item-table-list-column';
 import { useIsActiveRow } from '/@/renderer/components/item-list/item-table-list/item-table-list-context';
 import { JoinedArtists } from '/@/renderer/features/albums/components/joined-artists';
+import { MusicCacheIndicator } from '/@/renderer/features/music-cache/music-cache-indicator';
 import { PlayButton } from '/@/renderer/features/shared/components/play-button';
 import {
     LONG_PRESS_PLAY_BEHAVIOR,
@@ -333,6 +334,7 @@ export const QueueSongTitleCombinedColumn = (props: ItemTableListInnerColumn) =>
                         {...titleLinkProps}
                     >
                         <ExplicitIndicator explicitStatus={song?.explicitStatus} />
+                        <MusicCacheIndicator song={song} />
                         {row.name as string}
                         {song?.trackSubtitle && props.itemType !== LibraryItem.QUEUE_SONG && (
                             <span

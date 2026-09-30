@@ -2,6 +2,15 @@ import type { Song } from './domain-types';
 
 export const MUSIC_CACHE_GIB = 1024 ** 3;
 
+export const musicCacheSongFingerprint = (song: Song) => [
+    song.size,
+    song.duration,
+    song.container,
+    song.sampleRate,
+    song.bitDepth,
+    song.channels,
+];
+
 export interface MusicCacheCollection {
     account: string;
     id: string;
