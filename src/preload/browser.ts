@@ -16,6 +16,10 @@ const unmaximize = () => {
     ipcRenderer.send('window-unmaximize');
 };
 
+const setButtonVisibility = (visible: boolean) => {
+    ipcRenderer.send('window-set-button-visibility', visible);
+};
+
 const quit = () => {
     ipcRenderer.send('window-quit');
 };
@@ -35,6 +39,7 @@ export const browser = {
     maximize,
     minimize,
     quit,
+    setButtonVisibility,
     unmaximize,
 };
 

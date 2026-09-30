@@ -1287,7 +1287,7 @@ const getPlatformDefaultWindowBarStyle = (): Platform => {
     }
 
     if (utils?.isMacOS()) {
-        return Platform.MACOS;
+        return Platform.WEB;
     }
 
     if (utils?.isLinux()) {
@@ -2931,10 +2931,19 @@ export const useSettingsStore = createWithEqualityFn<SettingsSlice>()(
                     });
                 }
 
+                if (version < 35) {
+                    if (utils?.isMacOS() && state.window?.windowBarStyle === Platform.MACOS) {
+                        state.window.windowBarStyle = Platform.WEB;
+                        if (isElectron()) {
+                            window.api.localSettings?.set('window_window_bar_style', Platform.WEB);
+                        }
+                    }
+                }
+
                 return persistedState;
             },
             name: 'store_settings',
-            version: 34,
+            version: 35,
         },
     ),
 );
@@ -2953,10 +2962,28 @@ export const usePlaybackType = () => useSettingsStore((state) => state.playback.
 export const usePlayButtonBehavior = () =>
     useSettingsStore((state) => state.general.playButtonBehavior, shallow);
 
-export const useWindowSettings = () => useSettingsStore((state) => state.window, shallow);
+const resolveWindowBarStyle = (style: Platform): Platform => {
+    if (utils?.isMacOS() && style === Platform.MACOS) {
+        return Platform.WEB;
+    }
+
+    return style;
+};
+
+export const useWindowSettings = () =>
+    useSettingsStore((state) => {
+        const windowSettings = state.window;
+        const windowBarStyle = resolveWindowBarStyle(windowSettings.windowBarStyle);
+
+        if (windowBarStyle === windowSettings.windowBarStyle) {
+            return windowSettings;
+        }
+
+        return { ...windowSettings, windowBarStyle };
+    }, shallow);
 
 export const useWindowBarStyle = () =>
-    useSettingsStore((state) => state.window.windowBarStyle, shallow);
+    useSettingsStore((state) => resolveWindowBarStyle(state.window.windowBarStyle), shallow);
 
 export const useWindowBarTrackinfo = () =>
     useSettingsStore((state) => state.window.windowBarTrackinfo, shallow);

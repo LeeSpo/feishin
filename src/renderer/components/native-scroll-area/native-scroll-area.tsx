@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+import isElectron from 'is-electron';
 import { useOverlayScrollbars } from 'overlayscrollbars-react';
 import { CSSProperties, forwardRef, memo, ReactNode, Ref, useEffect, useRef } from 'react';
 
@@ -83,7 +85,14 @@ const BaseNativeScrollArea = forwardRef(
 
         return (
             <>
-                {windowBarStyle === Platform.WEB && <div className={styles.dragContainer} />}
+                {windowBarStyle === Platform.WEB && (
+                    <div
+                        className={clsx(
+                            styles.dragContainer,
+                            isElectron() && window.api.utils.isMacOS() && styles.dragContainerFull,
+                        )}
+                    />
+                )}
                 {!noHeader && pageHeaderProps && (
                     <PageHeader
                         animated

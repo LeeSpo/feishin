@@ -18,6 +18,10 @@ const unmaximize = () => browser?.unmaximize();
 export const WindowControls = () => {
     const [max, setMax] = useState(false);
 
+    if (!isElectron() || window.api.utils.isMacOS()) {
+        return null;
+    }
+
     const handleMinimize = () => minimize();
 
     const handleMaximize = () => {

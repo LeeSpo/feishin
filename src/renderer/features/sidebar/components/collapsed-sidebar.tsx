@@ -74,10 +74,14 @@ export const CollapsedSidebar = () => {
         return items;
     }, [sidebarItems, translatedSidebarItemMap]);
 
+    const padForTrafficLights =
+        isElectron() && window.api.utils.isMacOS() && windowBarStyle === Platform.WEB;
+
     return (
         <motion.div
             className={clsx({
                 [styles.linux]: windowBarStyle === Platform.LINUX,
+                [styles.macInset]: padForTrafficLights,
                 [styles.sidebarContainer]: true,
                 [styles.web]: windowBarStyle === Platform.WEB,
             })}

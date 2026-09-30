@@ -12,6 +12,10 @@
     max-height: calc(100vh - 149px);
 }
 
+.sidebar-container.mac-inset {
+    padding-top: 38px;
+}
+
 .server-icon {
     width: 2rem;
     height: 2rem;

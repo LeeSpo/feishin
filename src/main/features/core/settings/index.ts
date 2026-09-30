@@ -26,7 +26,7 @@ const getFrame = () => {
     }
 
     if (isMacOS) {
-        return 'macOS';
+        return 'web';
     }
 
     return 'linux';

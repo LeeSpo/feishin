@@ -8,6 +8,10 @@
     -webkit-app-region: drag;
 }
 
+.window-titlebar-container.mac-inset {
+    padding-left: 76px;
+}
+
 .content-container {
     display: flex;
     height: 100%;

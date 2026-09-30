@@ -20,6 +20,10 @@
     }
 }
 
+.drag-container-full {
+    width: 100%;
+}
+
 .scroll-area :global(.os-scrollbar) {
     z-index: 200;
 }

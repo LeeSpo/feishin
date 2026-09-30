@@ -12,6 +12,7 @@ import { MobileLayout } from '/@/renderer/layouts/mobile-layout/mobile-layout';
 import { AppRoute } from '/@/renderer/router/routes';
 import {
     useCommandPaletteState,
+    useFullScreenPlayerOverlayState,
     useLayoutHotkeyBindings,
     useSettingsStoreActions,
     useZoomFactor,
@@ -38,9 +39,28 @@ export const ResponsiveLayout = ({ shell }: ResponsiveLayoutProps) => {
         <>
             <ResponsiveLayoutBase shell={shell} />
             <LayoutHotkeys />
+            <MacWindowButtons />
             <GarbageCollection />
         </>
     );
+};
+
+const MacWindowButtons = () => {
+    const { expanded, visualizerExpanded } = useFullScreenPlayerOverlayState();
+
+    useEffect(() => {
+        if (!isElectron() || !window.api.utils.isMacOS()) {
+            return undefined;
+        }
+
+        window.api.browser.setButtonVisibility(!(expanded || visualizerExpanded));
+
+        return () => {
+            window.api.browser.setButtonVisibility(true);
+        };
+    }, [expanded, visualizerExpanded]);
+
+    return null;
 };
 
 const localSettings = isElectron() ? window.api.localSettings : null;

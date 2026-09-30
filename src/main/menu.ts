@@ -176,12 +176,17 @@ export default class MenuBuilder {
             ],
         };
         const subMenuWindow: MenuItemConstructorOptions = {
-            role: 'windowMenu',
+            label: 'Window',
             submenu: [
+                { role: 'minimize' },
+                { role: 'zoom' },
+                { type: 'separator' },
                 {
                     click: this.showMainWindow,
                     label: 'Show Feishin',
                 },
+                { type: 'separator' },
+                { role: 'front' },
             ],
         };
         const subMenuPlayback: MenuItemConstructorOptions = {

@@ -12,8 +12,11 @@ export const useShouldPadTitlebar = () => {
     const sideQueueType = useSideQueueType();
     const { windowBarStyle } = useWindowSettings();
 
+    const isMacOS = isElectron() && window.api.utils.isMacOS();
+
     const conditions = [
         isElectron(),
+        !isMacOS,
         windowBarStyle === Platform.WEB,
         !(isSidebarExpanded && sideQueueType === 'sideQueue' && !isQueuePage),
     ];

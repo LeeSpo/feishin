@@ -19,7 +19,13 @@ const WINDOW_BAR_OPTIONS = [
     { label: 'Native', value: Platform.LINUX },
 ];
 
+const MAC_WINDOW_BAR_OPTIONS = [
+    { label: 'Hidden', value: Platform.WEB },
+    { label: 'System titlebar', value: Platform.LINUX },
+];
+
 const localSettings = isElectron() ? window.api.localSettings : null;
+const isMacOS = isElectron() ? window.api.utils.isMacOS() : false;
 
 export const WindowSettings = memo(() => {
     const { t } = useTranslation();
@@ -30,7 +36,7 @@ export const WindowSettings = memo(() => {
         {
             control: (
                 <Select
-                    data={WINDOW_BAR_OPTIONS}
+                    data={isMacOS ? MAC_WINDOW_BAR_OPTIONS : WINDOW_BAR_OPTIONS}
                     disabled={!isElectron()}
                     onChange={(e) => {
                         if (!e) return;
@@ -169,7 +175,7 @@ export const WindowSettings = memo(() => {
             description: t('setting.exitToTray', {
                 context: 'description',
             }),
-            isHidden: !isElectron() || !settings.tray,
+            isHidden: !isElectron() || !settings.tray || isMacOS,
             title: t('setting.exitToTray'),
         },
         {

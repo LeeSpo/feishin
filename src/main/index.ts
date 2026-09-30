@@ -43,6 +43,7 @@ import {
     DEFAULT_WINDOW_BOUNDS,
     resolveWindowBounds,
 } from '/@/main/utils/window-bounds';
+import { shouldHideWindowOnClose } from '/@/main/utils/window-close';
 import { PlayerRepeat, PlayerStatus, PlayerType, TitleTheme } from '/@/shared/types/types';
 
 const ALPHA_UPDATER_CONFIG: {
@@ -447,7 +448,7 @@ const hideMainWindowToTray = () => {
         mainWindow.restore();
     }
 
-    mainWindow.setSkipTaskbar(true);
+    if (!isMacOS()) mainWindow.setSkipTaskbar(true);
     mainWindow.hide();
 };
 
@@ -461,7 +462,7 @@ export const showMainWindow = () => {
         mainWindow.restore();
     }
 
-    mainWindow.setSkipTaskbar(false);
+    if (!isMacOS()) mainWindow.setSkipTaskbar(false);
     mainWindow.show();
     mainWindow.focus();
     createWinThumbarButtons();
@@ -618,7 +619,11 @@ async function createWindow(first = true): Promise<void> {
         await installExtensions().catch((error) => log.error(error));
     }
 
-    const nativeFrame = store.get('window_window_bar_style', 'linux') === 'linux';
+    const windowBarStyle = store.get(
+        'window_window_bar_style',
+        isMacOS() ? 'web' : 'linux',
+    ) as string;
+    const nativeFrame = windowBarStyle === 'linux';
     store.set('window_has_frame', nativeFrame);
 
     const nativeFrameConfig: Record<string, BrowserWindowConstructorOptions> = {
@@ -636,6 +641,13 @@ async function createWindow(first = true): Promise<void> {
             autoHideMenuBar: true,
             frame: true,
         },
+    };
+
+    const macHiddenInset: BrowserWindowConstructorOptions = {
+        autoHideMenuBar: true,
+        frame: true,
+        titleBarStyle: 'hiddenInset',
+        trafficLightPosition: { x: 16, y: 22 },
     };
 
     const savedBounds = store.get('bounds') as Rectangle | undefined;
@@ -678,6 +690,7 @@ async function createWindow(first = true): Promise<void> {
         ...(nativeFrame && isLinux() && nativeFrameConfig.linux),
         ...(nativeFrame && isMacOS() && nativeFrameConfig.macOS),
         ...(nativeFrame && isWindows() && nativeFrameConfig.windows),
+        ...(!nativeFrame && isMacOS() && macHiddenInset),
         ...DEFAULT_WINDOW_BOUNDS,
         ...windowBounds,
     });
@@ -712,10 +725,17 @@ async function createWindow(first = true): Promise<void> {
     });
 
     ipcMain.on('window-quit', () => {
+        forceQuit = true;
         log.info('App quitting', { reason: 'window-quit' });
         shutdownServer();
         mainWindow?.close();
         app.exit();
+    });
+
+    ipcMain.on('window-set-button-visibility', (_event, visible: boolean) => {
+        if (isMacOS() && mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.setWindowButtonVisibility(visible);
+        }
     });
 
     ipcMain.handle('window-clear-cache', async () => {
@@ -834,9 +854,15 @@ async function createWindow(first = true): Promise<void> {
             store.set('fullscreen', mainWindow.isFullScreen());
         }
 
-        if (!exitFromTray && store.get('window_exit_to_tray')) {
+        if (
+            shouldHideWindowOnClose(
+                isMacOS(),
+                !!store.get('window_exit_to_tray'),
+                forceQuit || exitFromTray,
+            )
+        ) {
             event.preventDefault();
-            log.info('Main window hidden to tray');
+            log.info('Main window hidden');
             hideMainWindowToTray();
         }
 
